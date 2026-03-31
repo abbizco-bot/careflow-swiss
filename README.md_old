@@ -1,0 +1,87 @@
+# Abbizco CareFlow V0.1
+
+Abbizco CareFlow is a leadership-oriented web application for personnel planning in nursing homes and elderly care institutions.
+
+## Purpose
+
+CareFlow V0.1 is not a full ERP or HR system. It is an MVP focused on:
+
+- monthly personnel planning for the upcoming month
+- visibility of staffing risks
+- qualification coverage
+- early warning signals based on known future absences and changes
+- indication of likely temporary agency staffing needs
+
+## Core Product Promise
+
+CareFlow helps care leaders prepare the upcoming month in a reliable way, identify staffing and qualification risks early, and recognize likely external staffing needs before shortages become critical.
+
+## Primary Users
+
+- nursing home management
+- nursing directors
+- house managers
+- team leaders
+- staff responsible for personnel planning
+
+## In Scope for V0.1
+
+- multi-level organizational structure:
+  - facility / site
+  - house
+  - department / unit
+- employee master data
+- workload percentage (pensum)
+- working day constraints
+- shift constraints
+- qualifications and special competencies
+- planning-relevant absences and events
+- monthly planning support
+- staffing gap visibility
+- qualification gap visibility
+- simple forecast warnings for future months
+- monthly management report
+- simple plan export (PDF / printable)
+
+## Out of Scope for V0.1
+
+- payroll
+- time tracking
+- full HR workflows
+- full employee self-service portal
+- complex shift exchange workflows
+- full-year automated planning
+- ERP integrations
+- planning of external services such as doctors, pharmacy, cleaning
+- black-box AI optimization
+
+## Proposed Technical Direction
+
+Recommended stack for MVP:
+
+- Frontend: Next.js
+- Backend: Next.js API routes or server actions
+- Database: PostgreSQL
+- ORM: Prisma
+- Styling: Tailwind CSS
+- Deployment: Docker on Hostinger VPS
+- Auth: later phase, not required for first prototype
+
+## Development Principle
+
+Build simple, transparent, modular, leadership-focused software.
+Avoid overengineering and avoid hidden logic.
+
+## First Build Goal
+
+The first working version should include:
+
+1. project setup
+2. database schema
+3. seed data
+4. employee master data CRUD
+5. planning events / absences CRUD
+6. basic dashboard
+7. basic monthly planning view
+8. warning logic
+9. simple monthly report
