@@ -1,5 +1,6 @@
 import { assignmentRepository } from "../../assignments/assignment.repository";
 import { absenceRepository } from "../../absences/absence.repository";
+import { isEmployeeCountedAsQualified } from "../qualification/employee-qualification.rules";
 
 type ShiftAssignmentSnapshot = {
   id: number;
@@ -95,10 +96,10 @@ export async function buildShiftOperationalAvailabilityMap(
       );
 
       const assignedQualifiedCount = effectiveAssignments.filter(
-        (assignment) => assignment.employee?.qualified === true
+        (assignment) => isEmployeeCountedAsQualified(assignment.employee)
       ).length;
       const availableQualifiedCount = availableAssignments.filter(
-        (assignment) => assignment.employee?.qualified === true
+        (assignment) => isEmployeeCountedAsQualified(assignment.employee)
       ).length;
 
       return [
