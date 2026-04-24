@@ -7,6 +7,7 @@ import leadershipViewRouter from "./modules/leadership-view/leadership-view.rout
 import validationsRouter from "./modules/validations/validations.routes";
 import absenceRouter from "./modules/absences/absence.routes";
 import availabilityRequestsRouter from "./modules/availability-requests/availability-requests.routes";
+import planningMonthsRouter from "./modules/planning-months/planning-months.routes";
 
 type CreateAppOptions = {
   includeValidations?: boolean;
@@ -29,6 +30,7 @@ export function createApp(_options: CreateAppOptions = {}) {
   app.use("/leadership", leadershipViewRouter);
   app.use("/absences", absenceRouter);
   app.use("/availability-requests", availabilityRequestsRouter);
+  app.use("/planning-months", planningMonthsRouter);
 
   return app;
 }
