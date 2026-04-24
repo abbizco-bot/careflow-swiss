@@ -10,11 +10,13 @@ import {
   listPlanningMonthsHandler,
   updatePlanningShiftTemplateHandler,
 } from "./planning-months.controller";
+import { getPlanningMonthComparisonHandler } from "../planning-comparison/planning-comparison.controller";
 
 const planningMonthsRouter = Router();
 
 planningMonthsRouter.get("/", listPlanningMonthsHandler);
 planningMonthsRouter.get("/:id", getPlanningMonthHandler);
+planningMonthsRouter.get("/:id/comparison", getPlanningMonthComparisonHandler);
 planningMonthsRouter.post("/", createPlanningMonthHandler);
 planningMonthsRouter.post("/:id/initialize-days", initializePlanningDaysHandler);
 planningMonthsRouter.get(
