@@ -5,6 +5,7 @@ import assignmentRouter from "./modules/assignments/assignment.routes";
 import employeesRouter from "./modules/employees/employees.routes";
 import leadershipViewRouter from "./modules/leadership-view/leadership-view.routes";
 import validationsRouter from "./modules/validations/validations.routes";
+import absenceRouter from "./modules/absences/absence.routes";
 
 type CreateAppOptions = {
   includeValidations?: boolean;
@@ -25,6 +26,7 @@ export function createApp(_options: CreateAppOptions = {}) {
   app.use("/employees", employeesRouter);
   app.use("/validations", validationsRouter);
   app.use("/leadership", leadershipViewRouter);
+  app.use("/absences", absenceRouter);
 
   return app;
 }
