@@ -1,47 +1,46 @@
-import { Assignment, Prisma } from "../../generated/prisma/client";
+import { Prisma, Shift } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import type { ShiftType } from "./shift.types";
 
-export type CreateAssignmentInput = {
-  employeeId: number;
-  shiftId: number;
-  role?: string;
-  status?: string;
+export type CreateShiftInput = {
+  date: Date;
+  type: ShiftType;
+  requiredCount: number;
+  requiredQualifiedCount: number;
 };
 
-export type UpdateAssignmentInput = Partial<CreateAssignmentInput>;
+export type UpdateShiftInput = Partial<CreateShiftInput>;
 
-export async function getAssignments(): Promise<Assignment[]> {
-  return prisma.assignment.findMany({
-    orderBy: [{ id: "asc" }],
+export async function getShifts(): Promise<Shift[]> {
+  return prisma.shift.findMany({
+    orderBy: [{ date: "asc" }, { id: "asc" }],
   });
 }
 
-export async function getAssignmentById(id: number): Promise<Assignment | null> {
-  return prisma.assignment.findUnique({
+export async function getShiftById(id: number): Promise<Shift | null> {
+  return prisma.shift.findUnique({
     where: { id },
   });
 }
 
-export async function createAssignment(
-  data: CreateAssignmentInput
-): Promise<Assignment> {
-  return prisma.assignment.create({
+export async function createShift(data: CreateShiftInput): Promise<Shift> {
+  return prisma.shift.create({
     data,
   });
 }
 
-export async function updateAssignment(
+export async function updateShift(
   id: number,
-  data: UpdateAssignmentInput
-): Promise<Assignment> {
-  return prisma.assignment.update({
+  data: UpdateShiftInput
+): Promise<Shift> {
+  return prisma.shift.update({
     where: { id },
     data,
   });
 }
 
-export async function deleteAssignment(id: number): Promise<Assignment> {
-  return prisma.assignment.delete({
+export async function deleteShift(id: number): Promise<Shift> {
+  return prisma.shift.delete({
     where: { id },
   });
 }

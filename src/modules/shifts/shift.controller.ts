@@ -7,6 +7,7 @@ import {
   isPrismaNotFoundError,
   updateShift,
 } from "./shift.service";
+import { isShiftType, type ShiftType } from "./shift.types";
 
 type ShiftPayload = {
   date?: unknown;
@@ -43,6 +44,15 @@ function parseDate(value: unknown): Date | null {
   return date;
 }
 
+function sendValidationError(res: Response, message: string): void {
+  res.status(400).json({
+    error: {
+      code: "VALIDATION_ERROR",
+      message,
+    },
+  });
+}
+
 function parsePositiveInteger(value: unknown): number | null {
   if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
     return null;
@@ -62,7 +72,7 @@ function parseNonNegativeInteger(value: unknown): number | null {
 function validateCreatePayload(payload: ShiftPayload): {
   data?: {
     date: Date;
-    type: string;
+    type: ShiftType;
     requiredCount: number;
     requiredQualifiedCount: number;
   };
@@ -82,6 +92,12 @@ function validateCreatePayload(payload: ShiftPayload): {
 
   if (!type) {
     return { error: "type is required." };
+  }
+
+  if (!isShiftType(type)) {
+    return {
+      error: "type must be one of: early, late, night, day.",
+    };
   }
 
   if (requiredCount === null) {
@@ -113,7 +129,7 @@ function validateCreatePayload(payload: ShiftPayload): {
 function validateUpdatePayload(payload: ShiftPayload): {
   data?: {
     date?: Date;
-    type?: string;
+    type?: ShiftType;
     requiredCount?: number;
     requiredQualifiedCount?: number;
   };
@@ -121,7 +137,7 @@ function validateUpdatePayload(payload: ShiftPayload): {
 } {
   const data: {
     date?: Date;
-    type?: string;
+    type?: ShiftType;
     requiredCount?: number;
     requiredQualifiedCount?: number;
   } = {};
@@ -140,8 +156,15 @@ function validateUpdatePayload(payload: ShiftPayload): {
     if (typeof payload.type !== "string" || !payload.type.trim()) {
       return { error: "type must be a non-empty string." };
     }
+    const type = payload.type.trim();
 
-    data.type = payload.type.trim();
+    if (!isShiftType(type)) {
+      return {
+        error: "type must be one of: early, late, night, day.",
+      };
+    }
+
+    data.type = type;
   }
 
   if (payload.requiredCount !== undefined) {
@@ -225,7 +248,7 @@ export async function createShiftHandler(
   const validation = validateCreatePayload(req.body);
 
   if (!validation.data) {
-    res.status(400).json({ error: validation.error });
+    sendValidationError(res, validation.error ?? "Invalid shift payload.");
     return;
   }
 
@@ -252,7 +275,7 @@ export async function updateShiftHandler(
   const validation = validateUpdatePayload(req.body);
 
   if (!validation.data) {
-    res.status(400).json({ error: validation.error });
+    sendValidationError(res, validation.error ?? "Invalid shift payload.");
     return;
   }
 

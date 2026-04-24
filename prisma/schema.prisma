@@ -7,13 +7,54 @@ datasource db {
   provider = "postgresql"
 }
 
+enum QualificationLevel {
+  high
+  medium
+  low
+  none
+}
+
+enum BaseQualification {
+  DIPL_PFLEGE
+  FAGE
+  AGS
+  PFLEGEHILFE
+  LEARNER
+  EXTERNAL
+  OTHER
+}
+
+enum EmploymentType {
+  stable
+  variable
+  flexible
+}
+
+enum AssignmentFunction {
+  Pflegeleitung
+  Hausverantwortung
+  Tagesverantwortung
+  Pflegedienst
+  Springer
+  Lernende
+  Externe
+  Andere
+}
+
 model Employee {
-  id          Int          @id @default(autoincrement())
-  name        String
-  role        String
-  workload    Int
-  createdAt   DateTime     @default(now())
-  assignments Assignment[]
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  role                 String
+  workload             Int
+  qualified            Boolean               @default(false)
+  baseQualification    BaseQualification     @default(OTHER)
+  externalEmployeeId   String?               @unique @map("employee_id")
+  qualificationLevel   QualificationLevel?
+  employmentType       EmploymentType?
+  createdAt            DateTime              @default(now())
+  assignments          Assignment[]
+  absences             Absence[]
+  availabilityRequests AvailabilityRequest[]
 }
 
 model Shift {
@@ -24,14 +65,93 @@ model Shift {
   requiredQualifiedCount Int
   createdAt              DateTime     @default(now())
   assignments            Assignment[]
+
+  @@unique([date, type])
 }
 
 model Assignment {
+  id               Int                @id @default(autoincrement())
+  employeeId       Int
+  shiftId          Int
+
+  assignedFunction AssignmentFunction @default(Andere)
+  status           String             @default("planned")
+
+  createdAt        DateTime           @default(now())
+
+  employee         Employee           @relation(fields: [employeeId], references: [id])
+  shift            Shift              @relation(fields: [shiftId], references: [id])
+
+  @@unique([employeeId, shiftId])
+}
+
+model Absence {
   id         Int      @id @default(autoincrement())
   employeeId Int
-  shiftId    Int
+  type       String
+  scope      String   @default("full_day")
+  startDate  DateTime
+  endDate    DateTime?
+  status     String   @default("active")
+  note       String?
   createdAt  DateTime @default(now())
 
   employee   Employee @relation(fields: [employeeId], references: [id])
-  shift      Shift    @relation(fields: [shiftId], references: [id])
+}
+
+model DailySituation {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  situation String
+  createdAt DateTime @default(now())
+}
+
+model PlanningMonth {
+  id           Int                     @id @default(autoincrement())
+  year         Int
+  month        Int
+  status       String                  @default("draft")
+  createdAt    DateTime                @default(now())
+  planningDays PlanningDay[]
+
+  @@unique([year, month])
+}
+
+model PlanningDay {
+  id              Int                    @id @default(autoincrement())
+  planningMonthId Int
+  date            DateTime
+  isSpecialDay    Boolean                @default(false)
+  note            String?
+  createdAt       DateTime               @default(now())
+  planningMonth   PlanningMonth          @relation(fields: [planningMonthId], references: [id], onDelete: Cascade)
+  shiftTemplates  PlanningShiftTemplate[]
+
+  @@unique([planningMonthId, date])
+}
+
+model PlanningShiftTemplate {
+  id                     Int         @id @default(autoincrement())
+  planningDayId          Int
+  type                   String
+  requiredCount          Int
+  requiredQualifiedCount Int
+  isCritical             Boolean     @default(false)
+  createdAt              DateTime    @default(now())
+  planningDay            PlanningDay @relation(fields: [planningDayId], references: [id], onDelete: Cascade)
+}
+
+model AvailabilityRequest {
+  id             Int      @id @default(autoincrement())
+  employeeId     Int
+  type           String
+  startDate      DateTime
+  endDate        DateTime?
+  isFullDay      Boolean  @default(true)
+  constraintType String?
+  note           String?
+  priority       String   @default("medium")
+  status         String   @default("submitted")
+  createdAt      DateTime @default(now())
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
