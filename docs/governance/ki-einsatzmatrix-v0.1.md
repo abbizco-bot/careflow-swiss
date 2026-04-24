@@ -25,6 +25,7 @@ Daraus folgt:
 - Die fachliche Wahrheit liegt im Code und in den definierten Regeln.
 - Die erklärende und verdichtende Sprache darf nur auf validierten Fakten aufbauen.
 - Die letzte Verantwortung für Modellierung, Freigabe und Geltung bleibt beim Menschen.
+- Sprachliche Verdichtung darf Backend-Fakten lesbar machen, aber keine Priorität, Prognose oder Entscheidung erfinden.
 
 ## KI-Einsatzmatrix
 

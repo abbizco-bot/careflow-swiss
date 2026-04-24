@@ -147,6 +147,8 @@ Typische Dokumentationsorte sind:
 
 Nicht jede kleine Korrektur gehört in die README. Aber jede Änderung, durch die man CareFlow sonst falsch verstehen würde, muss dokumentiert werden.
 
+Sprach- und Glossaränderungen werden in `docs/language/` gepflegt, sofern sie keine neue Architektur- oder Domänenentscheidung darstellen.
+
 ### 10. Nächsten kleinsten Schritt benennen
 
 Jeder abgeschlossene Schritt soll nach Möglichkeit mit einer kurzen Antwort enden auf:
