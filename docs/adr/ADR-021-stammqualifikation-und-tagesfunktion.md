@@ -58,6 +58,14 @@ Kompatibilitaet / Legacy-Felder:
 - Die bestehende `requiredQualifiedCount`-Logik bleibt vorerst unveraendert.
 - Eine spaetere Migration von `qualified` und `qualificationLevel` auf `baseQualification` wird separat entschieden.
 
+Aktueller Stand der Qualifikationszaehlung:
+
+- `Employee.qualified` bleibt vorerst die operative Zaehlgrundlage fuer `requiredQualifiedCount`.
+- `Employee.baseQualification` ist die fachlich stabilere Stammdatenlogik.
+- Eine Mapping-Funktion von `baseQualification` zu `qualified` ist vorbereitet.
+- Diese Mapping-Funktion wird noch nicht produktiv verwendet.
+- Eine spaetere Umstellung ist eine eigene fachliche Migrationsentscheidung.
+
 Risiken und Grenzen:
 
 - Die aktuelle MVP-Regelbasis ist bewusst einfach und nicht einrichtungsspezifisch konfigurierbar.
