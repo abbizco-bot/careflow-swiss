@@ -8,13 +8,12 @@ import {
   buildShiftOperationalAvailabilityMap,
   type ShiftOperationalAvailability,
 } from "../validations/availability/availability.service";
+import { interpretOperationalGap } from "../shared/gap-interpretation/gap-interpretation";
 import { planningComparisonRepository } from "./planning-comparison.repository";
 import type {
   PlanningComparisonDay,
-  PlanningComparisonGapCode,
   PlanningComparisonGapSignal,
   PlanningComparisonOperationalShift,
-  PlanningComparisonPrimaryGapCause,
   PlanningComparisonStatus,
   PlanningMonthComparison,
   PlanningMonthComparisonSummary,
@@ -132,24 +131,28 @@ function buildPlanningComparisonDay(
       requiredQualifiedCount: template.requiredQualifiedCount,
       isCritical: template.isCritical,
     })),
-    operationalShifts: dayOperationalShifts.map((shift) => ({
-      id: shift.id,
-      type: shift.type,
-      requiredCount: shift.requiredCount,
-      requiredQualifiedCount: shift.requiredQualifiedCount,
-      assignedCount: shift.assignedCount,
-      availableAssignedCount: shift.availableAssignedCount,
-      absentAssignedCount: shift.absentAssignedCount,
-      qualifiedAssignedCount: shift.qualifiedAssignedCount,
-      availableQualifiedCount: shift.availableQualifiedCount,
-      effectiveCoverageGap: shift.effectiveCoverageGap,
-      effectiveQualificationGap: shift.effectiveQualificationGap,
-      ...derivePrimaryGapInterpretation(
+    operationalShifts: dayOperationalShifts.map((shift) => {
+      const primaryInterpretation = interpretOperationalShift(
         shift,
-        gapSignals,
-        relevantAvailabilityRequestCount
-      ),
-    })),
+        relevantAvailabilityRequestCount > 0
+      );
+
+      return {
+        id: shift.id,
+        type: shift.type,
+        requiredCount: shift.requiredCount,
+        requiredQualifiedCount: shift.requiredQualifiedCount,
+        assignedCount: shift.assignedCount,
+        availableAssignedCount: shift.availableAssignedCount,
+        absentAssignedCount: shift.absentAssignedCount,
+        qualifiedAssignedCount: shift.qualifiedAssignedCount,
+        availableQualifiedCount: shift.availableQualifiedCount,
+        effectiveCoverageGap: shift.effectiveCoverageGap,
+        effectiveQualificationGap: shift.effectiveQualificationGap,
+        primaryGapCause: primaryInterpretation.primaryGapCause,
+        primaryGapSignals: primaryInterpretation.primaryGapSignals,
+      };
+    }),
     relevantAvailabilityRequestCount,
     requestCount: relevantAvailabilityRequestCount,
     gapSignalCount: gapSignals.length,
@@ -311,77 +314,14 @@ function deriveGapSignals(
   }
 
   for (const operationalShift of operationalShifts) {
-    if (operationalShift.effectiveCoverageGap > 0) {
-      gapSignals.push({
-        code: "effective_coverage_gap",
-        shiftType: operationalShift.type,
-        requiredCount: operationalShift.requiredCount,
-        assignedCount: operationalShift.assignedCount,
-        availableAssignedCount: operationalShift.availableAssignedCount,
-        absentAssignedCount: operationalShift.absentAssignedCount,
-        effectiveCoverageGap: operationalShift.effectiveCoverageGap,
-      });
-
-      if (operationalShift.assignedCount < operationalShift.requiredCount) {
-        gapSignals.push({
-          code: "operational_coverage_gap",
+    gapSignals.push(
+      ...interpretOperationalShift(operationalShift, false).gapSignals.map(
+        (gapSignal) => ({
+          ...gapSignal,
           shiftType: operationalShift.type,
-          requiredCount: operationalShift.requiredCount,
-          assignedCount: operationalShift.assignedCount,
-          availableAssignedCount: operationalShift.availableAssignedCount,
-          effectiveCoverageGap: operationalShift.effectiveCoverageGap,
-        });
-      } else if (operationalShift.absentAssignedCount > 0) {
-        gapSignals.push({
-          code: "absence_driven_coverage_gap",
-          shiftType: operationalShift.type,
-          requiredCount: operationalShift.requiredCount,
-          assignedCount: operationalShift.assignedCount,
-          availableAssignedCount: operationalShift.availableAssignedCount,
-          absentAssignedCount: operationalShift.absentAssignedCount,
-          effectiveCoverageGap: operationalShift.effectiveCoverageGap,
-        });
-      }
-    }
-
-    if (operationalShift.effectiveQualificationGap > 0) {
-      gapSignals.push({
-        code: "effective_qualification_gap",
-        shiftType: operationalShift.type,
-        requiredQualifiedCount: operationalShift.requiredQualifiedCount,
-        qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
-        availableQualifiedCount: operationalShift.availableQualifiedCount,
-        effectiveQualificationGap: operationalShift.effectiveQualificationGap,
-      });
-
-      if (
-        operationalShift.qualifiedAssignedCount <
-        operationalShift.requiredQualifiedCount
-      ) {
-        gapSignals.push({
-          code: "operational_qualification_gap",
-          shiftType: operationalShift.type,
-          requiredQualifiedCount: operationalShift.requiredQualifiedCount,
-          qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
-          availableQualifiedCount: operationalShift.availableQualifiedCount,
-          effectiveQualificationGap:
-            operationalShift.effectiveQualificationGap,
-        });
-      } else if (
-        operationalShift.qualifiedAssignedCount >
-        operationalShift.availableQualifiedCount
-      ) {
-        gapSignals.push({
-          code: "absence_driven_qualification_gap",
-          shiftType: operationalShift.type,
-          requiredQualifiedCount: operationalShift.requiredQualifiedCount,
-          qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
-          availableQualifiedCount: operationalShift.availableQualifiedCount,
-          effectiveQualificationGap:
-            operationalShift.effectiveQualificationGap,
-        });
-      }
-    }
+        })
+      )
+    );
   }
 
   if (relevantAvailabilityRequestCount > 0) {
@@ -406,6 +346,17 @@ function buildOperationalShiftComparisonEntry(
     throw new Error(`Missing operational availability for shift ${shift.id}`);
   }
 
+  const interpretation = interpretOperationalGap({
+    requiredCount: shift.requiredCount,
+    requiredQualifiedCount: shift.requiredQualifiedCount,
+    assignedCount: availability.assignedCount,
+    availableAssignedCount: availability.availableAssignedCount,
+    absentAssignedCount: availability.absentAssignedCount,
+    qualifiedAssignedCount: availability.assignedQualifiedCount,
+    availableQualifiedCount: availability.availableQualifiedCount,
+    hasRequestContext: false,
+  });
+
   return {
     id: shift.id,
     date: shift.date,
@@ -417,106 +368,25 @@ function buildOperationalShiftComparisonEntry(
     absentAssignedCount: availability.absentAssignedCount,
     qualifiedAssignedCount: availability.assignedQualifiedCount,
     availableQualifiedCount: availability.availableQualifiedCount,
-    effectiveCoverageGap: Math.max(
-      0,
-      shift.requiredCount - availability.availableAssignedCount
-    ),
-    effectiveQualificationGap: Math.max(
-      0,
-      shift.requiredQualifiedCount - availability.availableQualifiedCount
-    ),
+    effectiveCoverageGap: interpretation.effectiveCoverageGap,
+    effectiveQualificationGap: interpretation.effectiveQualificationGap,
   };
 }
 
-function derivePrimaryGapInterpretation(
+function interpretOperationalShift(
   shift: OperationalShiftComparisonEntry,
-  gapSignals: PlanningComparisonGapSignal[],
-  relevantAvailabilityRequestCount: number
-): {
-  primaryGapCause: PlanningComparisonPrimaryGapCause;
-  primaryGapSignals: PlanningComparisonGapCode[];
-} {
-  const primaryGapSignals: PlanningComparisonGapCode[] = [];
-  const causeClasses = new Set<Exclude<PlanningComparisonPrimaryGapCause, "none" | "mixed">>();
-  const shiftGapSignals = gapSignals.filter(
-    (gapSignal) => gapSignal.shiftType === shift.type
-  );
-
-  if (
-    shiftGapSignals.some((gapSignal) =>
-      isOperationalPrimaryGapSignal(gapSignal.code)
-    )
-  ) {
-    causeClasses.add("operational");
-    addPrimaryGapSignals(
-      primaryGapSignals,
-      shiftGapSignals,
-      isOperationalPrimaryGapSignal
-    );
-  }
-
-  if (
-    shiftGapSignals.some((gapSignal) => isAbsencePrimaryGapSignal(gapSignal.code))
-  ) {
-    causeClasses.add("absence");
-    addPrimaryGapSignals(
-      primaryGapSignals,
-      shiftGapSignals,
-      isAbsencePrimaryGapSignal
-    );
-  }
-
-  if (relevantAvailabilityRequestCount > 0) {
-    causeClasses.add("request_context");
-    primaryGapSignals.push("request_context_only");
-  }
-
-  return {
-    primaryGapCause: derivePrimaryGapCause(causeClasses),
-    primaryGapSignals: [...new Set(primaryGapSignals)],
-  };
-}
-
-function addPrimaryGapSignals(
-  target: PlanningComparisonGapCode[],
-  gapSignals: PlanningComparisonGapSignal[],
-  predicate: (code: PlanningComparisonGapCode) => boolean
-): void {
-  for (const gapSignal of gapSignals) {
-    if (predicate(gapSignal.code)) {
-      target.push(gapSignal.code);
-    }
-  }
-}
-
-function derivePrimaryGapCause(
-  causeClasses: Set<Exclude<PlanningComparisonPrimaryGapCause, "none" | "mixed">>
-): PlanningComparisonPrimaryGapCause {
-  if (causeClasses.size === 0) {
-    return "none";
-  }
-
-  if (causeClasses.size > 1) {
-    return "mixed";
-  }
-
-  return [...causeClasses][0];
-}
-
-function isOperationalPrimaryGapSignal(
-  code: PlanningComparisonGapCode
-): boolean {
-  return (
-    code === "operational_coverage_gap" ||
-    code === "operational_qualification_gap"
-  );
-}
-
-function isAbsencePrimaryGapSignal(code: PlanningComparisonGapCode): boolean {
-  return (
-    code === "absence_driven_coverage_gap" ||
-    code === "absence_driven_qualification_gap"
-  );
+  hasRequestContext: boolean
+) {
+  return interpretOperationalGap({
+    requiredCount: shift.requiredCount,
+    requiredQualifiedCount: shift.requiredQualifiedCount,
+    assignedCount: shift.assignedCount,
+    availableAssignedCount: shift.availableAssignedCount,
+    absentAssignedCount: shift.absentAssignedCount,
+    qualifiedAssignedCount: shift.qualifiedAssignedCount,
+    availableQualifiedCount: shift.availableQualifiedCount,
+    hasRequestContext,
+  });
 }
 
 function deriveAffectedShiftTypes(

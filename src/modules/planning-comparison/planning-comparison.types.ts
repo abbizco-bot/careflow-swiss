@@ -2,6 +2,10 @@ import type {
   PlanningMonth,
   PlanningShiftTemplate,
 } from "../../generated/prisma/client";
+import type {
+  GapInterpretationSignalCode,
+  GapPrimaryCause,
+} from "../shared/gap-interpretation/gap-interpretation";
 
 export type PlanningComparisonStatus =
   | "not_started"
@@ -15,20 +19,9 @@ export type PlanningComparisonGapCode =
   | "planned_count_not_reached"
   | "operational_count_exceeds_plan"
   | "request_present"
-  | "effective_coverage_gap"
-  | "effective_qualification_gap"
-  | "absence_driven_coverage_gap"
-  | "absence_driven_qualification_gap"
-  | "operational_coverage_gap"
-  | "operational_qualification_gap"
-  | "request_context_only";
+  | GapInterpretationSignalCode;
 
-export type PlanningComparisonPrimaryGapCause =
-  | "none"
-  | "operational"
-  | "absence"
-  | "request_context"
-  | "mixed";
+export type PlanningComparisonPrimaryGapCause = GapPrimaryCause;
 
 export interface PlanningComparisonGapSignal {
   code: PlanningComparisonGapCode;
