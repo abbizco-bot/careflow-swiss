@@ -195,6 +195,11 @@ function buildGapSignalsByCode(
     request_present: 0,
     effective_coverage_gap: 0,
     effective_qualification_gap: 0,
+    absence_driven_coverage_gap: 0,
+    absence_driven_qualification_gap: 0,
+    operational_coverage_gap: 0,
+    operational_qualification_gap: 0,
+    request_context_only: 0,
   };
 
   for (const day of days) {
@@ -306,6 +311,27 @@ function deriveGapSignals(
         absentAssignedCount: operationalShift.absentAssignedCount,
         effectiveCoverageGap: operationalShift.effectiveCoverageGap,
       });
+
+      if (operationalShift.assignedCount < operationalShift.requiredCount) {
+        gapSignals.push({
+          code: "operational_coverage_gap",
+          shiftType: operationalShift.type,
+          requiredCount: operationalShift.requiredCount,
+          assignedCount: operationalShift.assignedCount,
+          availableAssignedCount: operationalShift.availableAssignedCount,
+          effectiveCoverageGap: operationalShift.effectiveCoverageGap,
+        });
+      } else if (operationalShift.absentAssignedCount > 0) {
+        gapSignals.push({
+          code: "absence_driven_coverage_gap",
+          shiftType: operationalShift.type,
+          requiredCount: operationalShift.requiredCount,
+          assignedCount: operationalShift.assignedCount,
+          availableAssignedCount: operationalShift.availableAssignedCount,
+          absentAssignedCount: operationalShift.absentAssignedCount,
+          effectiveCoverageGap: operationalShift.effectiveCoverageGap,
+        });
+      }
     }
 
     if (operationalShift.effectiveQualificationGap > 0) {
@@ -317,12 +343,44 @@ function deriveGapSignals(
         availableQualifiedCount: operationalShift.availableQualifiedCount,
         effectiveQualificationGap: operationalShift.effectiveQualificationGap,
       });
+
+      if (
+        operationalShift.qualifiedAssignedCount <
+        operationalShift.requiredQualifiedCount
+      ) {
+        gapSignals.push({
+          code: "operational_qualification_gap",
+          shiftType: operationalShift.type,
+          requiredQualifiedCount: operationalShift.requiredQualifiedCount,
+          qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
+          availableQualifiedCount: operationalShift.availableQualifiedCount,
+          effectiveQualificationGap:
+            operationalShift.effectiveQualificationGap,
+        });
+      } else if (
+        operationalShift.qualifiedAssignedCount >
+        operationalShift.availableQualifiedCount
+      ) {
+        gapSignals.push({
+          code: "absence_driven_qualification_gap",
+          shiftType: operationalShift.type,
+          requiredQualifiedCount: operationalShift.requiredQualifiedCount,
+          qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
+          availableQualifiedCount: operationalShift.availableQualifiedCount,
+          effectiveQualificationGap:
+            operationalShift.effectiveQualificationGap,
+        });
+      }
     }
   }
 
   if (relevantAvailabilityRequestCount > 0) {
     gapSignals.push({
       code: "request_present",
+      requestCount: relevantAvailabilityRequestCount,
+    });
+    gapSignals.push({
+      code: "request_context_only",
       requestCount: relevantAvailabilityRequestCount,
     });
   }

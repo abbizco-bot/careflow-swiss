@@ -274,7 +274,7 @@ describe("Planning comparison read-only integration", () => {
       daysNotStarted: 1,
       daysWithRequests: 2,
       requestsTotal: 2,
-      gapSignalsTotal: 11,
+      gapSignalsTotal: 18,
       daysWithGapSignals: 4,
       daysWithSpecialDays: 1,
       daysWithPlanningNotes: 1,
@@ -286,6 +286,11 @@ describe("Planning comparison read-only integration", () => {
         request_present: 2,
         effective_coverage_gap: 3,
         effective_qualification_gap: 2,
+        absence_driven_coverage_gap: 0,
+        absence_driven_qualification_gap: 0,
+        operational_coverage_gap: 3,
+        operational_qualification_gap: 2,
+        request_context_only: 2,
       },
     });
 
@@ -314,7 +319,7 @@ describe("Planning comparison read-only integration", () => {
           date: "2026-11-02",
           relevantAvailabilityRequestCount: 1,
           requestCount: 1,
-          gapSignalCount: 2,
+          gapSignalCount: 4,
           affectedShiftTypes: ["early"],
           isSpecialDay: false,
           planningNote: null,
@@ -340,6 +345,10 @@ describe("Planning comparison read-only integration", () => {
               requestCount: 1,
             }),
             expect.objectContaining({
+              code: "request_context_only",
+              requestCount: 1,
+            }),
+            expect.objectContaining({
               code: "effective_coverage_gap",
               shiftType: "early",
               requiredCount: 2,
@@ -348,13 +357,21 @@ describe("Planning comparison read-only integration", () => {
               absentAssignedCount: 0,
               effectiveCoverageGap: 1,
             }),
+            expect.objectContaining({
+              code: "operational_coverage_gap",
+              shiftType: "early",
+              requiredCount: 2,
+              assignedCount: 1,
+              availableAssignedCount: 1,
+              effectiveCoverageGap: 1,
+            }),
           ]),
         }),
         expect.objectContaining({
           date: "2026-11-03",
           relevantAvailabilityRequestCount: 1,
           requestCount: 1,
-          gapSignalCount: 5,
+          gapSignalCount: 8,
           affectedShiftTypes: ["early", "night"],
           isSpecialDay: false,
           planningNote: null,
@@ -390,13 +407,31 @@ describe("Planning comparison read-only integration", () => {
               requestCount: 1,
             }),
             expect.objectContaining({
+              code: "request_context_only",
+              requestCount: 1,
+            }),
+            expect.objectContaining({
               code: "effective_coverage_gap",
               shiftType: "night",
               effectiveCoverageGap: 1,
             }),
             expect.objectContaining({
+              code: "operational_coverage_gap",
+              shiftType: "night",
+              assignedCount: 0,
+              availableAssignedCount: 0,
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
               code: "effective_qualification_gap",
               shiftType: "night",
+              effectiveQualificationGap: 1,
+            }),
+            expect.objectContaining({
+              code: "operational_qualification_gap",
+              shiftType: "night",
+              qualifiedAssignedCount: 0,
+              availableQualifiedCount: 0,
               effectiveQualificationGap: 1,
             }),
           ]),
@@ -405,7 +440,7 @@ describe("Planning comparison read-only integration", () => {
           date: "2026-11-04",
           relevantAvailabilityRequestCount: 0,
           requestCount: 0,
-          gapSignalCount: 3,
+          gapSignalCount: 5,
           affectedShiftTypes: ["early"],
           isSpecialDay: false,
           planningNote: null,
@@ -423,11 +458,51 @@ describe("Planning comparison read-only integration", () => {
               effectiveCoverageGap: 1,
             }),
             expect.objectContaining({
+              code: "operational_coverage_gap",
+              shiftType: "early",
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
               code: "effective_qualification_gap",
               shiftType: "early",
               effectiveQualificationGap: 1,
             }),
+            expect.objectContaining({
+              code: "operational_qualification_gap",
+              shiftType: "early",
+              effectiveQualificationGap: 1,
+            }),
           ]),
+        }),
+      ])
+    );
+
+    const alignedDay = response.body.days.find(
+      (day: { date: string }) => day.date === "2026-11-02"
+    );
+    const mismatchDay = response.body.days.find(
+      (day: { date: string }) => day.date === "2026-11-03"
+    );
+
+    expect(alignedDay).toBeDefined();
+    expect(mismatchDay).toBeDefined();
+    expect(alignedDay!.gapSignals).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "absence_driven_coverage_gap",
+          shiftType: "early",
+        }),
+      ])
+    );
+    expect(mismatchDay!.gapSignals).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "absence_driven_coverage_gap",
+          shiftType: "night",
+        }),
+        expect.objectContaining({
+          code: "absence_driven_qualification_gap",
+          shiftType: "night",
         }),
       ])
     );
@@ -745,6 +820,10 @@ describe("Planning comparison read-only integration", () => {
               code: "request_present",
               requestCount: 1,
             }),
+            expect.objectContaining({
+              code: "request_context_only",
+              requestCount: 1,
+            }),
           ],
         }),
         expect.objectContaining({
@@ -765,6 +844,15 @@ describe("Planning comparison read-only integration", () => {
           gapSignals: expect.arrayContaining([
             expect.objectContaining({
               code: "effective_coverage_gap",
+              shiftType: "late",
+              requiredCount: 2,
+              assignedCount: 2,
+              availableAssignedCount: 1,
+              absentAssignedCount: 1,
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
+              code: "absence_driven_coverage_gap",
               shiftType: "late",
               requiredCount: 2,
               assignedCount: 2,
@@ -796,6 +884,14 @@ describe("Planning comparison read-only integration", () => {
               effectiveCoverageGap: 1,
             }),
             expect.objectContaining({
+              code: "absence_driven_coverage_gap",
+              shiftType: "night",
+              assignedCount: 1,
+              availableAssignedCount: 0,
+              absentAssignedCount: 1,
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
               code: "effective_qualification_gap",
               shiftType: "night",
               requiredQualifiedCount: 1,
@@ -803,7 +899,41 @@ describe("Planning comparison read-only integration", () => {
               availableQualifiedCount: 0,
               effectiveQualificationGap: 1,
             }),
+            expect.objectContaining({
+              code: "absence_driven_qualification_gap",
+              shiftType: "night",
+              requiredQualifiedCount: 1,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 0,
+              effectiveQualificationGap: 1,
+            }),
           ]),
+        }),
+      ])
+    );
+
+    const coverageGapDayResult = response.body.days.find(
+      (day: { date: string }) => day.date === `${uniqueYear}-12-11`
+    );
+    const qualificationGapDayResult = response.body.days.find(
+      (day: { date: string }) => day.date === `${uniqueYear}-12-12`
+    );
+
+    expect(coverageGapDayResult).toBeDefined();
+    expect(qualificationGapDayResult).toBeDefined();
+    expect(coverageGapDayResult!.gapSignals).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "operational_coverage_gap",
+          shiftType: "late",
+        }),
+      ])
+    );
+    expect(qualificationGapDayResult!.gapSignals).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "operational_qualification_gap",
+          shiftType: "night",
         }),
       ])
     );

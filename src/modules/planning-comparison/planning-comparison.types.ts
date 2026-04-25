@@ -16,7 +16,12 @@ export type PlanningComparisonGapCode =
   | "operational_count_exceeds_plan"
   | "request_present"
   | "effective_coverage_gap"
-  | "effective_qualification_gap";
+  | "effective_qualification_gap"
+  | "absence_driven_coverage_gap"
+  | "absence_driven_qualification_gap"
+  | "operational_coverage_gap"
+  | "operational_qualification_gap"
+  | "request_context_only";
 
 export interface PlanningComparisonGapSignal {
   code: PlanningComparisonGapCode;
