@@ -1,6 +1,10 @@
 import type { PlanningShiftTemplate } from "../../generated/prisma/client";
 import { availabilityRequestsRepository } from "../availability-requests/availability-requests.repository";
 import { assignmentRepository } from "../assignments/assignment.repository";
+import {
+  interpretOperationalGap,
+  type GapInterpretationResult,
+} from "../shared/gap-interpretation/gap-interpretation";
 import { leadershipViewRepository } from "./leadership-view.repository";
 import type {
   LeadershipDayHeadlineView,
@@ -51,7 +55,10 @@ type LeadershipDayShiftSignal = {
   assignedEffective: number;
   sickCount: number;
   requestedCount: number;
+  gapContext: LeadershipDayGapContext;
 };
+
+type LeadershipDayGapContext = GapInterpretationResult;
 
 type RequestDateRangeEntry = {
   type: string;
@@ -642,6 +649,12 @@ function buildLeadershipDayHeadline(input: {
     shiftId: number;
     type: string;
     requiredCount: number;
+    requiredQualifiedCount: number;
+    assignedCount: number;
+    availableAssignedCount: number;
+    absentAssignedCount: number;
+    assignedQualifiedCount: number;
+    availableQualifiedCount: number;
   }>;
   fullValidations: Array<{
     coverage: {
@@ -775,9 +788,18 @@ function buildLeadershipDayShiftSignals(input: {
     shiftId: number;
     type: string;
     requiredCount: number;
+    requiredQualifiedCount: number;
+    assignedCount: number;
+    availableAssignedCount: number;
+    absentAssignedCount: number;
+    assignedQualifiedCount: number;
+    availableQualifiedCount: number;
   }>;
 }): LeadershipDayShiftSignal[] {
   const shiftSignalById = new Map<number, LeadershipDayShiftSignal>();
+  const shiftOverviewById = new Map(
+    input.shiftOverview.map((shift) => [shift.shiftId, shift])
+  );
 
   for (const shift of input.shiftOverview) {
     shiftSignalById.set(shift.shiftId, {
@@ -788,6 +810,7 @@ function buildLeadershipDayShiftSignals(input: {
       assignedEffective: 0,
       sickCount: 0,
       requestedCount: 0,
+      gapContext: interpretLeadershipDayGapContext(shift, false),
     });
   }
 
@@ -819,9 +842,44 @@ function buildLeadershipDayShiftSignals(input: {
     }
   }
 
-  return [...shiftSignalById.values()].sort((left, right) =>
-    compareShiftTypes(left.shiftType, right.shiftType)
-  );
+  return [...shiftSignalById.values()]
+    .map((shiftSignal) => {
+      const shift = shiftOverviewById.get(shiftSignal.shiftId);
+
+      if (!shift) {
+        return shiftSignal;
+      }
+
+      return {
+        ...shiftSignal,
+        gapContext: interpretLeadershipDayGapContext(
+          shift,
+          shiftSignal.requestedCount > 0
+        ),
+      };
+    })
+    .sort((left, right) => compareShiftTypes(left.shiftType, right.shiftType));
+}
+
+function interpretLeadershipDayGapContext(shift: {
+  requiredCount: number;
+  requiredQualifiedCount: number;
+  assignedCount: number;
+  availableAssignedCount: number;
+  absentAssignedCount: number;
+  assignedQualifiedCount: number;
+  availableQualifiedCount: number;
+}, hasRequestContext: boolean): LeadershipDayGapContext {
+  return interpretOperationalGap({
+    requiredCount: shift.requiredCount,
+    requiredQualifiedCount: shift.requiredQualifiedCount,
+    assignedCount: shift.assignedCount,
+    availableAssignedCount: shift.availableAssignedCount,
+    absentAssignedCount: shift.absentAssignedCount,
+    qualifiedAssignedCount: shift.assignedQualifiedCount,
+    availableQualifiedCount: shift.availableQualifiedCount,
+    hasRequestContext,
+  });
 }
 
 function deriveContextLine(
