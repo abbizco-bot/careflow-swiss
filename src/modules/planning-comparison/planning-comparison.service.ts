@@ -2,17 +2,29 @@ import type {
   AvailabilityRequest,
   PlanningMonth,
   PlanningShiftTemplate,
-  Shift,
 } from "../../generated/prisma/client";
 import { availabilityRequestsRepository } from "../availability-requests/availability-requests.repository";
+import {
+  buildShiftOperationalAvailabilityMap,
+  type ShiftOperationalAvailability,
+} from "../validations/availability/availability.service";
 import { planningComparisonRepository } from "./planning-comparison.repository";
 import type {
   PlanningComparisonDay,
   PlanningComparisonGapSignal,
+  PlanningComparisonOperationalShift,
   PlanningComparisonStatus,
   PlanningMonthComparison,
   PlanningMonthComparisonSummary,
 } from "./planning-comparison.types";
+
+type OperationalShiftWithAssignments = Awaited<
+  ReturnType<typeof planningComparisonRepository.findOperationalShiftsByDateRange>
+>[number];
+
+type OperationalShiftComparisonEntry = PlanningComparisonOperationalShift & {
+  date: Date;
+};
 
 type PlanningMonthWithDays = PlanningMonth & {
   planningDays: Array<{
@@ -46,11 +58,19 @@ export const planningComparisonService = {
         range.endDate
       ),
     ]);
+    const availabilityByShiftId =
+      await buildShiftOperationalAvailabilityMap(operationalShifts);
+    const operationalShiftsWithAvailability = operationalShifts.map((shift) =>
+      buildOperationalShiftComparisonEntry(
+        shift,
+        availabilityByShiftId.get(shift.id)
+      )
+    );
 
     const days = planningMonth.planningDays.map((planningDay) =>
       buildPlanningComparisonDay(
         planningDay,
-        operationalShifts,
+        operationalShiftsWithAvailability,
         availabilityRequests
       )
     );
@@ -82,7 +102,7 @@ function buildMonthRange(planningMonth: PlanningMonth) {
 
 function buildPlanningComparisonDay(
   planningDay: PlanningMonthWithDays["planningDays"][number],
-  operationalShifts: Shift[],
+  operationalShifts: OperationalShiftComparisonEntry[],
   availabilityRequests: AvailabilityRequest[]
 ): PlanningComparisonDay {
   const dateKey = toDateKey(planningDay.date);
@@ -112,6 +132,13 @@ function buildPlanningComparisonDay(
       type: shift.type,
       requiredCount: shift.requiredCount,
       requiredQualifiedCount: shift.requiredQualifiedCount,
+      assignedCount: shift.assignedCount,
+      availableAssignedCount: shift.availableAssignedCount,
+      absentAssignedCount: shift.absentAssignedCount,
+      qualifiedAssignedCount: shift.qualifiedAssignedCount,
+      availableQualifiedCount: shift.availableQualifiedCount,
+      effectiveCoverageGap: shift.effectiveCoverageGap,
+      effectiveQualificationGap: shift.effectiveQualificationGap,
     })),
     relevantAvailabilityRequestCount,
     requestCount: relevantAvailabilityRequestCount,
@@ -166,6 +193,8 @@ function buildGapSignalsByCode(
     planned_count_not_reached: 0,
     operational_count_exceeds_plan: 0,
     request_present: 0,
+    effective_coverage_gap: 0,
+    effective_qualification_gap: 0,
   };
 
   for (const day of days) {
@@ -179,7 +208,7 @@ function buildGapSignalsByCode(
 
 function deriveComparisonStatus(
   planningShiftTemplates: PlanningShiftTemplate[],
-  operationalShifts: Shift[]
+  operationalShifts: OperationalShiftComparisonEntry[]
 ): PlanningComparisonStatus {
   if (planningShiftTemplates.length === 0 && operationalShifts.length === 0) {
     return "not_started";
@@ -213,7 +242,7 @@ function deriveComparisonStatus(
 
 function deriveGapSignals(
   planningShiftTemplates: PlanningShiftTemplate[],
-  operationalShifts: Shift[],
+  operationalShifts: OperationalShiftComparisonEntry[],
   relevantAvailabilityRequestCount: number
 ): PlanningComparisonGapSignal[] {
   const planningTotals = buildTotalsMap(planningShiftTemplates);
@@ -266,6 +295,31 @@ function deriveGapSignals(
     });
   }
 
+  for (const operationalShift of operationalShifts) {
+    if (operationalShift.effectiveCoverageGap > 0) {
+      gapSignals.push({
+        code: "effective_coverage_gap",
+        shiftType: operationalShift.type,
+        requiredCount: operationalShift.requiredCount,
+        assignedCount: operationalShift.assignedCount,
+        availableAssignedCount: operationalShift.availableAssignedCount,
+        absentAssignedCount: operationalShift.absentAssignedCount,
+        effectiveCoverageGap: operationalShift.effectiveCoverageGap,
+      });
+    }
+
+    if (operationalShift.effectiveQualificationGap > 0) {
+      gapSignals.push({
+        code: "effective_qualification_gap",
+        shiftType: operationalShift.type,
+        requiredQualifiedCount: operationalShift.requiredQualifiedCount,
+        qualifiedAssignedCount: operationalShift.qualifiedAssignedCount,
+        availableQualifiedCount: operationalShift.availableQualifiedCount,
+        effectiveQualificationGap: operationalShift.effectiveQualificationGap,
+      });
+    }
+  }
+
   if (relevantAvailabilityRequestCount > 0) {
     gapSignals.push({
       code: "request_present",
@@ -274,6 +328,36 @@ function deriveGapSignals(
   }
 
   return gapSignals;
+}
+
+function buildOperationalShiftComparisonEntry(
+  shift: OperationalShiftWithAssignments,
+  availability?: ShiftOperationalAvailability
+): OperationalShiftComparisonEntry {
+  if (!availability) {
+    throw new Error(`Missing operational availability for shift ${shift.id}`);
+  }
+
+  return {
+    id: shift.id,
+    date: shift.date,
+    type: shift.type,
+    requiredCount: shift.requiredCount,
+    requiredQualifiedCount: shift.requiredQualifiedCount,
+    assignedCount: availability.assignedCount,
+    availableAssignedCount: availability.availableAssignedCount,
+    absentAssignedCount: availability.absentAssignedCount,
+    qualifiedAssignedCount: availability.assignedQualifiedCount,
+    availableQualifiedCount: availability.availableQualifiedCount,
+    effectiveCoverageGap: Math.max(
+      0,
+      shift.requiredCount - availability.availableAssignedCount
+    ),
+    effectiveQualificationGap: Math.max(
+      0,
+      shift.requiredQualifiedCount - availability.availableQualifiedCount
+    ),
+  };
 }
 
 function deriveAffectedShiftTypes(

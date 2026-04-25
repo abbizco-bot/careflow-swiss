@@ -39,6 +39,25 @@ export const planningComparisonRepository = {
           lt: endDate,
         },
       },
+      include: {
+        assignments: {
+          include: {
+            employee: {
+              select: {
+                qualified: true,
+              },
+            },
+          },
+          orderBy: [
+            {
+              createdAt: "asc",
+            },
+            {
+              id: "asc",
+            },
+          ],
+        },
+      },
       orderBy: [
         {
           date: "asc",

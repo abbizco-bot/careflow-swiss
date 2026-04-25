@@ -1,7 +1,6 @@
 import type {
   PlanningMonth,
   PlanningShiftTemplate,
-  Shift,
 } from "../../generated/prisma/client";
 
 export type PlanningComparisonStatus =
@@ -15,7 +14,9 @@ export type PlanningComparisonGapCode =
   | "unplanned_operational_shift"
   | "planned_count_not_reached"
   | "operational_count_exceeds_plan"
-  | "request_present";
+  | "request_present"
+  | "effective_coverage_gap"
+  | "effective_qualification_gap";
 
 export interface PlanningComparisonGapSignal {
   code: PlanningComparisonGapCode;
@@ -23,6 +24,29 @@ export interface PlanningComparisonGapSignal {
   plannedCount?: number;
   operationalCount?: number;
   requestCount?: number;
+  requiredCount?: number;
+  assignedCount?: number;
+  availableAssignedCount?: number;
+  absentAssignedCount?: number;
+  requiredQualifiedCount?: number;
+  qualifiedAssignedCount?: number;
+  availableQualifiedCount?: number;
+  effectiveCoverageGap?: number;
+  effectiveQualificationGap?: number;
+}
+
+export interface PlanningComparisonOperationalShift {
+  id: number;
+  type: string;
+  requiredCount: number;
+  requiredQualifiedCount: number;
+  assignedCount: number;
+  availableAssignedCount: number;
+  absentAssignedCount: number;
+  qualifiedAssignedCount: number;
+  availableQualifiedCount: number;
+  effectiveCoverageGap: number;
+  effectiveQualificationGap: number;
 }
 
 export interface PlanningComparisonDay {
@@ -37,9 +61,7 @@ export interface PlanningComparisonDay {
       | "isCritical"
     >
   >;
-  operationalShifts: Array<
-    Pick<Shift, "id" | "type" | "requiredCount" | "requiredQualifiedCount">
-  >;
+  operationalShifts: PlanningComparisonOperationalShift[];
   relevantAvailabilityRequestCount: number;
   requestCount: number;
   gapSignalCount: number;
@@ -78,3 +100,5 @@ export interface PlanningMonthComparison {
 // recommendations, or hidden reasoning.
 // Context fields only expose direct, descriptive facts such as counts,
 // affected shift types, and existing planning day metadata.
+// Effective staffing fields reuse the existing operational availability logic;
+// they describe current staffing reality and do not change planning records.

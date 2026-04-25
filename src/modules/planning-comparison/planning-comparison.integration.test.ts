@@ -8,6 +8,7 @@ type PlanningComparisonTestContext = {
   planningMonthIds: number[];
   shiftIds: number[];
   assignmentIds: number[];
+  absenceIds: number[];
   availabilityRequestIds: number[];
 };
 
@@ -27,6 +28,14 @@ describe("Planning comparison read-only integration", () => {
         where: {
           id: {
             in: context.assignmentIds,
+          },
+        },
+      });
+
+      await prisma.absence.deleteMany({
+        where: {
+          id: {
+            in: context.absenceIds,
           },
         },
       });
@@ -205,6 +214,7 @@ describe("Planning comparison read-only integration", () => {
       planningMonthIds: [planningMonth.id],
       shiftIds: [alignedShift.id, mismatchShift.id, partialShift.id],
       assignmentIds: [assignment.id],
+      absenceIds: [],
       availabilityRequestIds: [availabilityRequest.id],
     });
 
@@ -264,7 +274,7 @@ describe("Planning comparison read-only integration", () => {
       daysNotStarted: 1,
       daysWithRequests: 2,
       requestsTotal: 2,
-      gapSignalsTotal: 6,
+      gapSignalsTotal: 11,
       daysWithGapSignals: 4,
       daysWithSpecialDays: 1,
       daysWithPlanningNotes: 1,
@@ -274,6 +284,8 @@ describe("Planning comparison read-only integration", () => {
         planned_count_not_reached: 1,
         operational_count_exceeds_plan: 0,
         request_present: 2,
+        effective_coverage_gap: 3,
+        effective_qualification_gap: 2,
       },
     });
 
@@ -302,15 +314,39 @@ describe("Planning comparison read-only integration", () => {
           date: "2026-11-02",
           relevantAvailabilityRequestCount: 1,
           requestCount: 1,
-          gapSignalCount: 1,
-          affectedShiftTypes: [],
+          gapSignalCount: 2,
+          affectedShiftTypes: ["early"],
           isSpecialDay: false,
           planningNote: null,
           comparisonStatus: "aligned",
+          operationalShifts: [
+            expect.objectContaining({
+              id: alignedShift.id,
+              type: "early",
+              requiredCount: 2,
+              requiredQualifiedCount: 1,
+              assignedCount: 1,
+              availableAssignedCount: 1,
+              absentAssignedCount: 0,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 1,
+              effectiveCoverageGap: 1,
+              effectiveQualificationGap: 0,
+            }),
+          ],
           gapSignals: expect.arrayContaining([
             expect.objectContaining({
               code: "request_present",
               requestCount: 1,
+            }),
+            expect.objectContaining({
+              code: "effective_coverage_gap",
+              shiftType: "early",
+              requiredCount: 2,
+              assignedCount: 1,
+              availableAssignedCount: 1,
+              absentAssignedCount: 0,
+              effectiveCoverageGap: 1,
             }),
           ]),
         }),
@@ -318,11 +354,24 @@ describe("Planning comparison read-only integration", () => {
           date: "2026-11-03",
           relevantAvailabilityRequestCount: 1,
           requestCount: 1,
-          gapSignalCount: 3,
+          gapSignalCount: 5,
           affectedShiftTypes: ["early", "night"],
           isSpecialDay: false,
           planningNote: null,
           comparisonStatus: "mismatch",
+          operationalShifts: [
+            expect.objectContaining({
+              id: mismatchShift.id,
+              type: "night",
+              assignedCount: 0,
+              availableAssignedCount: 0,
+              absentAssignedCount: 0,
+              qualifiedAssignedCount: 0,
+              availableQualifiedCount: 0,
+              effectiveCoverageGap: 1,
+              effectiveQualificationGap: 1,
+            }),
+          ],
           gapSignals: expect.arrayContaining([
             expect.objectContaining({
               code: "planned_shift_missing",
@@ -340,13 +389,23 @@ describe("Planning comparison read-only integration", () => {
               code: "request_present",
               requestCount: 1,
             }),
+            expect.objectContaining({
+              code: "effective_coverage_gap",
+              shiftType: "night",
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
+              code: "effective_qualification_gap",
+              shiftType: "night",
+              effectiveQualificationGap: 1,
+            }),
           ]),
         }),
         expect.objectContaining({
           date: "2026-11-04",
           relevantAvailabilityRequestCount: 0,
           requestCount: 0,
-          gapSignalCount: 1,
+          gapSignalCount: 3,
           affectedShiftTypes: ["early"],
           isSpecialDay: false,
           planningNote: null,
@@ -357,6 +416,16 @@ describe("Planning comparison read-only integration", () => {
               shiftType: "early",
               plannedCount: 2,
               operationalCount: 1,
+            }),
+            expect.objectContaining({
+              code: "effective_coverage_gap",
+              shiftType: "early",
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
+              code: "effective_qualification_gap",
+              shiftType: "early",
+              effectiveQualificationGap: 1,
             }),
           ]),
         }),
@@ -406,5 +475,378 @@ describe("Planning comparison read-only integration", () => {
     expect(assignmentAfter).toEqual(assignmentBefore);
     expect(requestAfter).toEqual(requestBefore);
     expect(dailySituationCountAfter).toBe(dailySituationCountBefore);
+  });
+
+  it("adds effective staffing counts and gaps without mutating operational records", async () => {
+    const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const uniqueYear = 2030 + (Date.now() % 50);
+    const employeeQualifiedAvailable = await prisma.employee.create({
+      data: {
+        name: `Planning Effective Qualified Available ${suffix}`,
+        role: "nurse",
+        workload: 80,
+        qualified: true,
+      },
+    });
+    const employeeSupportAvailable = await prisma.employee.create({
+      data: {
+        name: `Planning Effective Support Available ${suffix}`,
+        role: "assistant",
+        workload: 80,
+        qualified: false,
+      },
+    });
+    const employeeSupportAbsent = await prisma.employee.create({
+      data: {
+        name: `Planning Effective Support Absent ${suffix}`,
+        role: "assistant",
+        workload: 80,
+        qualified: false,
+      },
+    });
+    const employeeQualifiedAbsent = await prisma.employee.create({
+      data: {
+        name: `Planning Effective Qualified Absent ${suffix}`,
+        role: "nurse",
+        workload: 80,
+        qualified: true,
+      },
+    });
+
+    const planningMonth = await prisma.planningMonth.create({
+      data: {
+        year: uniqueYear,
+        month: 12,
+        status: "draft",
+      },
+    });
+
+    const [completeDay, coverageGapDay, qualificationGapDay] =
+      await Promise.all([
+        prisma.planningDay.create({
+          data: {
+            planningMonthId: planningMonth.id,
+            date: new Date(`${uniqueYear}-12-10T00:00:00.000Z`),
+          },
+        }),
+        prisma.planningDay.create({
+          data: {
+            planningMonthId: planningMonth.id,
+            date: new Date(`${uniqueYear}-12-11T00:00:00.000Z`),
+          },
+        }),
+        prisma.planningDay.create({
+          data: {
+            planningMonthId: planningMonth.id,
+            date: new Date(`${uniqueYear}-12-12T00:00:00.000Z`),
+          },
+        }),
+      ]);
+
+    await prisma.planningShiftTemplate.createMany({
+      data: [
+        {
+          planningDayId: completeDay.id,
+          type: "early",
+          requiredCount: 2,
+          requiredQualifiedCount: 1,
+        },
+        {
+          planningDayId: coverageGapDay.id,
+          type: "late",
+          requiredCount: 2,
+          requiredQualifiedCount: 1,
+        },
+        {
+          planningDayId: qualificationGapDay.id,
+          type: "night",
+          requiredCount: 1,
+          requiredQualifiedCount: 1,
+        },
+      ],
+    });
+
+    const [completeShift, coverageGapShift, qualificationGapShift] =
+      await Promise.all([
+        prisma.shift.create({
+          data: {
+            date: new Date(`${uniqueYear}-12-10T00:00:00.000Z`),
+            type: "early",
+            requiredCount: 2,
+            requiredQualifiedCount: 1,
+          },
+        }),
+        prisma.shift.create({
+          data: {
+            date: new Date(`${uniqueYear}-12-11T00:00:00.000Z`),
+            type: "late",
+            requiredCount: 2,
+            requiredQualifiedCount: 1,
+          },
+        }),
+        prisma.shift.create({
+          data: {
+            date: new Date(`${uniqueYear}-12-12T00:00:00.000Z`),
+            type: "night",
+            requiredCount: 1,
+            requiredQualifiedCount: 1,
+          },
+        }),
+      ]);
+
+    const assignments = await Promise.all([
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeQualifiedAvailable.id,
+          shiftId: completeShift.id,
+          status: "planned",
+        },
+      }),
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeSupportAvailable.id,
+          shiftId: completeShift.id,
+          status: "planned",
+        },
+      }),
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeQualifiedAvailable.id,
+          shiftId: coverageGapShift.id,
+          status: "planned",
+        },
+      }),
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeSupportAbsent.id,
+          shiftId: coverageGapShift.id,
+          status: "planned",
+        },
+      }),
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeQualifiedAbsent.id,
+          shiftId: qualificationGapShift.id,
+          status: "planned",
+        },
+      }),
+    ]);
+
+    const [supportAbsence, qualifiedAbsence] = await Promise.all([
+      prisma.absence.create({
+        data: {
+          employeeId: employeeSupportAbsent.id,
+          type: "sick",
+          scope: "full_day",
+          startDate: new Date(`${uniqueYear}-12-11T00:00:00.000Z`),
+          endDate: new Date(`${uniqueYear}-12-11T00:00:00.000Z`),
+          status: "active",
+        },
+      }),
+      prisma.absence.create({
+        data: {
+          employeeId: employeeQualifiedAbsent.id,
+          type: "sick",
+          scope: "full_day",
+          startDate: new Date(`${uniqueYear}-12-12T00:00:00.000Z`),
+          endDate: new Date(`${uniqueYear}-12-12T00:00:00.000Z`),
+          status: "active",
+        },
+      }),
+    ]);
+
+    const availabilityRequest = await prisma.availabilityRequest.create({
+      data: {
+        employeeId: employeeSupportAvailable.id,
+        type: "wish_free",
+        startDate: new Date(`${uniqueYear}-12-10T00:00:00.000Z`),
+        endDate: new Date(`${uniqueYear}-12-10T00:00:00.000Z`),
+        isFullDay: true,
+        priority: "high",
+        status: "submitted",
+      },
+    });
+
+    testContexts.push({
+      employeeIds: [
+        employeeQualifiedAvailable.id,
+        employeeSupportAvailable.id,
+        employeeSupportAbsent.id,
+        employeeQualifiedAbsent.id,
+      ],
+      planningMonthIds: [planningMonth.id],
+      shiftIds: [completeShift.id, coverageGapShift.id, qualificationGapShift.id],
+      assignmentIds: assignments.map((assignment) => assignment.id),
+      absenceIds: [supportAbsence.id, qualifiedAbsence.id],
+      availabilityRequestIds: [availabilityRequest.id],
+    });
+
+    const shiftsBefore = await prisma.shift.findMany({
+      where: {
+        id: {
+          in: [completeShift.id, coverageGapShift.id, qualificationGapShift.id],
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const assignmentsBefore = await prisma.assignment.findMany({
+      where: {
+        id: {
+          in: assignments.map((assignment) => assignment.id),
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const absencesBefore = await prisma.absence.findMany({
+      where: {
+        id: {
+          in: [supportAbsence.id, qualifiedAbsence.id],
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const requestBefore = await prisma.availabilityRequest.findUnique({
+      where: {
+        id: availabilityRequest.id,
+      },
+    });
+
+    const response = await request(app).get(
+      `/planning-months/${planningMonth.id}/comparison`
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.days).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          date: `${uniqueYear}-12-10`,
+          requestCount: 1,
+          operationalShifts: [
+            expect.objectContaining({
+              id: completeShift.id,
+              type: "early",
+              assignedCount: 2,
+              availableAssignedCount: 2,
+              absentAssignedCount: 0,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 1,
+              effectiveCoverageGap: 0,
+              effectiveQualificationGap: 0,
+            }),
+          ],
+          gapSignals: [
+            expect.objectContaining({
+              code: "request_present",
+              requestCount: 1,
+            }),
+          ],
+        }),
+        expect.objectContaining({
+          date: `${uniqueYear}-12-11`,
+          operationalShifts: [
+            expect.objectContaining({
+              id: coverageGapShift.id,
+              type: "late",
+              assignedCount: 2,
+              availableAssignedCount: 1,
+              absentAssignedCount: 1,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 1,
+              effectiveCoverageGap: 1,
+              effectiveQualificationGap: 0,
+            }),
+          ],
+          gapSignals: expect.arrayContaining([
+            expect.objectContaining({
+              code: "effective_coverage_gap",
+              shiftType: "late",
+              requiredCount: 2,
+              assignedCount: 2,
+              availableAssignedCount: 1,
+              absentAssignedCount: 1,
+              effectiveCoverageGap: 1,
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          date: `${uniqueYear}-12-12`,
+          operationalShifts: [
+            expect.objectContaining({
+              id: qualificationGapShift.id,
+              type: "night",
+              assignedCount: 1,
+              availableAssignedCount: 0,
+              absentAssignedCount: 1,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 0,
+              effectiveCoverageGap: 1,
+              effectiveQualificationGap: 1,
+            }),
+          ],
+          gapSignals: expect.arrayContaining([
+            expect.objectContaining({
+              code: "effective_coverage_gap",
+              shiftType: "night",
+              effectiveCoverageGap: 1,
+            }),
+            expect.objectContaining({
+              code: "effective_qualification_gap",
+              shiftType: "night",
+              requiredQualifiedCount: 1,
+              qualifiedAssignedCount: 1,
+              availableQualifiedCount: 0,
+              effectiveQualificationGap: 1,
+            }),
+          ]),
+        }),
+      ])
+    );
+
+    const shiftsAfter = await prisma.shift.findMany({
+      where: {
+        id: {
+          in: [completeShift.id, coverageGapShift.id, qualificationGapShift.id],
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const assignmentsAfter = await prisma.assignment.findMany({
+      where: {
+        id: {
+          in: assignments.map((assignment) => assignment.id),
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const absencesAfter = await prisma.absence.findMany({
+      where: {
+        id: {
+          in: [supportAbsence.id, qualifiedAbsence.id],
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    const requestAfter = await prisma.availabilityRequest.findUnique({
+      where: {
+        id: availabilityRequest.id,
+      },
+    });
+
+    expect(shiftsAfter).toEqual(shiftsBefore);
+    expect(assignmentsAfter).toEqual(assignmentsBefore);
+    expect(absencesAfter).toEqual(absencesBefore);
+    expect(requestAfter).toEqual(requestBefore);
   });
 });
