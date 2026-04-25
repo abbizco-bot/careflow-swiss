@@ -11,8 +11,10 @@ import {
 import { planningComparisonRepository } from "./planning-comparison.repository";
 import type {
   PlanningComparisonDay,
+  PlanningComparisonGapCode,
   PlanningComparisonGapSignal,
   PlanningComparisonOperationalShift,
+  PlanningComparisonPrimaryGapCause,
   PlanningComparisonStatus,
   PlanningMonthComparison,
   PlanningMonthComparisonSummary,
@@ -22,7 +24,10 @@ type OperationalShiftWithAssignments = Awaited<
   ReturnType<typeof planningComparisonRepository.findOperationalShiftsByDateRange>
 >[number];
 
-type OperationalShiftComparisonEntry = PlanningComparisonOperationalShift & {
+type OperationalShiftComparisonEntry = Omit<
+  PlanningComparisonOperationalShift,
+  "primaryGapCause" | "primaryGapSignals"
+> & {
   date: Date;
 };
 
@@ -139,6 +144,11 @@ function buildPlanningComparisonDay(
       availableQualifiedCount: shift.availableQualifiedCount,
       effectiveCoverageGap: shift.effectiveCoverageGap,
       effectiveQualificationGap: shift.effectiveQualificationGap,
+      ...derivePrimaryGapInterpretation(
+        shift,
+        gapSignals,
+        relevantAvailabilityRequestCount
+      ),
     })),
     relevantAvailabilityRequestCount,
     requestCount: relevantAvailabilityRequestCount,
@@ -416,6 +426,97 @@ function buildOperationalShiftComparisonEntry(
       shift.requiredQualifiedCount - availability.availableQualifiedCount
     ),
   };
+}
+
+function derivePrimaryGapInterpretation(
+  shift: OperationalShiftComparisonEntry,
+  gapSignals: PlanningComparisonGapSignal[],
+  relevantAvailabilityRequestCount: number
+): {
+  primaryGapCause: PlanningComparisonPrimaryGapCause;
+  primaryGapSignals: PlanningComparisonGapCode[];
+} {
+  const primaryGapSignals: PlanningComparisonGapCode[] = [];
+  const causeClasses = new Set<Exclude<PlanningComparisonPrimaryGapCause, "none" | "mixed">>();
+  const shiftGapSignals = gapSignals.filter(
+    (gapSignal) => gapSignal.shiftType === shift.type
+  );
+
+  if (
+    shiftGapSignals.some((gapSignal) =>
+      isOperationalPrimaryGapSignal(gapSignal.code)
+    )
+  ) {
+    causeClasses.add("operational");
+    addPrimaryGapSignals(
+      primaryGapSignals,
+      shiftGapSignals,
+      isOperationalPrimaryGapSignal
+    );
+  }
+
+  if (
+    shiftGapSignals.some((gapSignal) => isAbsencePrimaryGapSignal(gapSignal.code))
+  ) {
+    causeClasses.add("absence");
+    addPrimaryGapSignals(
+      primaryGapSignals,
+      shiftGapSignals,
+      isAbsencePrimaryGapSignal
+    );
+  }
+
+  if (relevantAvailabilityRequestCount > 0) {
+    causeClasses.add("request_context");
+    primaryGapSignals.push("request_context_only");
+  }
+
+  return {
+    primaryGapCause: derivePrimaryGapCause(causeClasses),
+    primaryGapSignals: [...new Set(primaryGapSignals)],
+  };
+}
+
+function addPrimaryGapSignals(
+  target: PlanningComparisonGapCode[],
+  gapSignals: PlanningComparisonGapSignal[],
+  predicate: (code: PlanningComparisonGapCode) => boolean
+): void {
+  for (const gapSignal of gapSignals) {
+    if (predicate(gapSignal.code)) {
+      target.push(gapSignal.code);
+    }
+  }
+}
+
+function derivePrimaryGapCause(
+  causeClasses: Set<Exclude<PlanningComparisonPrimaryGapCause, "none" | "mixed">>
+): PlanningComparisonPrimaryGapCause {
+  if (causeClasses.size === 0) {
+    return "none";
+  }
+
+  if (causeClasses.size > 1) {
+    return "mixed";
+  }
+
+  return [...causeClasses][0];
+}
+
+function isOperationalPrimaryGapSignal(
+  code: PlanningComparisonGapCode
+): boolean {
+  return (
+    code === "operational_coverage_gap" ||
+    code === "operational_qualification_gap"
+  );
+}
+
+function isAbsencePrimaryGapSignal(code: PlanningComparisonGapCode): boolean {
+  return (
+    code === "absence_driven_coverage_gap" ||
+    code === "absence_driven_qualification_gap"
+  );
 }
 
 function deriveAffectedShiftTypes(

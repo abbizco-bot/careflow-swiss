@@ -23,6 +23,13 @@ export type PlanningComparisonGapCode =
   | "operational_qualification_gap"
   | "request_context_only";
 
+export type PlanningComparisonPrimaryGapCause =
+  | "none"
+  | "operational"
+  | "absence"
+  | "request_context"
+  | "mixed";
+
 export interface PlanningComparisonGapSignal {
   code: PlanningComparisonGapCode;
   shiftType?: string;
@@ -52,6 +59,8 @@ export interface PlanningComparisonOperationalShift {
   availableQualifiedCount: number;
   effectiveCoverageGap: number;
   effectiveQualificationGap: number;
+  primaryGapCause: PlanningComparisonPrimaryGapCause;
+  primaryGapSignals: PlanningComparisonGapCode[];
 }
 
 export interface PlanningComparisonDay {
