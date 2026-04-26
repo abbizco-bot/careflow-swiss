@@ -4,6 +4,7 @@ import { assignmentRepository } from "../assignments/assignment.repository";
 import {
   interpretOperationalGap,
   type GapInterpretationResult,
+  type GapPrimaryCause,
 } from "../shared/gap-interpretation/gap-interpretation";
 import { leadershipViewRepository } from "./leadership-view.repository";
 import type {
@@ -106,16 +107,23 @@ export const leadershipViewService = {
       shiftOverview.shifts,
       fullValidations
     );
+    const shiftSignals = buildLeadershipDayShiftSignals({
+      assignments: dayAssignments,
+      shiftOverview: shiftOverview.shifts,
+    });
 
     return {
       date: normalizedDate,
       day: {
         headline: buildLeadershipDayHeadline({
-          assignments: dayAssignments,
-          shiftOverview: shiftOverview.shifts,
+          shiftSignals,
           fullValidations,
         }),
-        shifts: buildShiftRows(plannedCountByType, actualShiftByType),
+        shifts: buildShiftRows(
+          plannedCountByType,
+          actualShiftByType,
+          shiftSignals
+        ),
       },
     };
   },
@@ -618,17 +626,20 @@ function mergeQualificationStatus(
 
 function buildShiftRows(
   plannedCountByType: Map<string, number>,
-  actualShiftByType: Map<string, LeadershipActualShiftAggregate>
+  actualShiftByType: Map<string, LeadershipActualShiftAggregate>,
+  shiftSignals: LeadershipDayShiftSignal[]
 ): LeadershipDayShiftView[] {
   const shiftTypes = new Set([
     ...plannedCountByType.keys(),
     ...actualShiftByType.keys(),
   ]);
+  const gapContextByType = buildGapContextByShiftType(shiftSignals);
 
   return [...shiftTypes]
     .sort(compareShiftTypes)
     .map((type) => {
       const actualShift = actualShiftByType.get(type);
+      const gapContext = gapContextByType.get(type) ?? emptyLeadershipDayGap();
 
       return {
         type,
@@ -639,23 +650,88 @@ function buildShiftRows(
         qualification: {
           status: actualShift?.qualificationStatus ?? null,
         },
+        gap: {
+          primaryCause: gapContext.primaryGapCause,
+          signals: gapContext.primaryGapSignals,
+          effectiveCoverageGap: gapContext.effectiveCoverageGap,
+          effectiveQualificationGap: gapContext.effectiveQualificationGap,
+        },
       };
     });
 }
 
+function buildGapContextByShiftType(
+  shiftSignals: LeadershipDayShiftSignal[]
+): Map<string, LeadershipDayGapContext> {
+  const gapContextByType = new Map<string, LeadershipDayGapContext>();
+
+  for (const shiftSignal of shiftSignals) {
+    const existingContext = gapContextByType.get(shiftSignal.shiftType);
+
+    gapContextByType.set(
+      shiftSignal.shiftType,
+      existingContext
+        ? mergeLeadershipDayGapContexts(existingContext, shiftSignal.gapContext)
+        : shiftSignal.gapContext
+    );
+  }
+
+  return gapContextByType;
+}
+
+function mergeLeadershipDayGapContexts(
+  left: LeadershipDayGapContext,
+  right: LeadershipDayGapContext
+): LeadershipDayGapContext {
+  const primaryGapSignals = [
+    ...new Set([...left.primaryGapSignals, ...right.primaryGapSignals]),
+  ];
+
+  return {
+    gapSignals: [...left.gapSignals, ...right.gapSignals],
+    effectiveCoverageGap:
+      left.effectiveCoverageGap + right.effectiveCoverageGap,
+    effectiveQualificationGap:
+      left.effectiveQualificationGap + right.effectiveQualificationGap,
+    primaryGapCause: mergeLeadershipDayPrimaryCause(
+      left.primaryGapCause,
+      right.primaryGapCause
+    ),
+    primaryGapSignals,
+  };
+}
+
+function mergeLeadershipDayPrimaryCause(
+  left: GapPrimaryCause,
+  right: GapPrimaryCause
+): GapPrimaryCause {
+  if (left === right) {
+    return left;
+  }
+
+  if (left === "none") {
+    return right;
+  }
+
+  if (right === "none") {
+    return left;
+  }
+
+  return "mixed";
+}
+
+function emptyLeadershipDayGap(): LeadershipDayGapContext {
+  return {
+    gapSignals: [],
+    effectiveCoverageGap: 0,
+    effectiveQualificationGap: 0,
+    primaryGapCause: "none",
+    primaryGapSignals: [],
+  };
+}
+
 function buildLeadershipDayHeadline(input: {
-  assignments: LeadershipDayAssignmentSnapshot[];
-  shiftOverview: Array<{
-    shiftId: number;
-    type: string;
-    requiredCount: number;
-    requiredQualifiedCount: number;
-    assignedCount: number;
-    availableAssignedCount: number;
-    absentAssignedCount: number;
-    assignedQualifiedCount: number;
-    availableQualifiedCount: number;
-  }>;
+  shiftSignals: LeadershipDayShiftSignal[];
   fullValidations: Array<{
     coverage: {
       status: string;
@@ -666,11 +742,7 @@ function buildLeadershipDayHeadline(input: {
     issues: FullValidationIssue[];
   }>;
 }): LeadershipDayHeadlineView {
-  const shiftSignals = buildLeadershipDayShiftSignals({
-    assignments: input.assignments,
-    shiftOverview: input.shiftOverview,
-  });
-  const eventDrivenShiftSignals = shiftSignals.filter(
+  const eventDrivenShiftSignals = input.shiftSignals.filter(
     (shiftSignal) =>
       shiftSignal.assignedPlanned >= shiftSignal.requiredCount &&
       shiftSignal.assignedEffective < shiftSignal.requiredCount
@@ -720,7 +792,7 @@ function buildLeadershipDayHeadline(input: {
   }
 
   const sickHeadline = buildSickText(
-    shiftSignals.filter((shiftSignal) => shiftSignal.sickCount > 0)
+    input.shiftSignals.filter((shiftSignal) => shiftSignal.sickCount > 0)
   );
 
   if (sickHeadline) {
@@ -732,7 +804,7 @@ function buildLeadershipDayHeadline(input: {
   }
 
   const requestedHeadline = buildRequestedText(
-    shiftSignals.filter((shiftSignal) => shiftSignal.requestedCount > 0)
+    input.shiftSignals.filter((shiftSignal) => shiftSignal.requestedCount > 0)
   );
 
   if (requestedHeadline) {

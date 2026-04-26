@@ -1,5 +1,9 @@
 import type { QualificationStatus } from "../validations/qualification/qualification.types";
 import type { SituationLevel } from "../validations/situation/situation.types";
+import type {
+  GapInterpretationSignalCode,
+  GapPrimaryCause,
+} from "../shared/gap-interpretation/gap-interpretation";
 
 export interface LeadershipDayHeadlineView {
   title: string;
@@ -11,12 +15,20 @@ export interface LeadershipDayShiftQualificationView {
   status: QualificationStatus | null;
 }
 
+export interface LeadershipDayShiftGapView {
+  primaryCause: GapPrimaryCause;
+  signals: GapInterpretationSignalCode[];
+  effectiveCoverageGap: number;
+  effectiveQualificationGap: number;
+}
+
 export interface LeadershipDayShiftView {
   type: string;
   label: string;
   plannedCount: number;
   actualCount: number;
   qualification: LeadershipDayShiftQualificationView;
+  gap: LeadershipDayShiftGapView;
 }
 
 export interface LeadershipDayView {

@@ -323,6 +323,15 @@ describe("Leadership day view integration", () => {
             qualification: {
               status: "underqualified",
             },
+            gap: {
+              primaryCause: "operational",
+              signals: [
+                "operational_coverage_gap",
+                "operational_qualification_gap",
+              ],
+              effectiveCoverageGap: 2,
+              effectiveQualificationGap: 1,
+            },
           },
           {
             type: "late",
@@ -331,6 +340,15 @@ describe("Leadership day view integration", () => {
             actualCount: 0,
             qualification: {
               status: "underqualified",
+            },
+            gap: {
+              primaryCause: "mixed",
+              signals: [
+                "operational_coverage_gap",
+                "absence_driven_qualification_gap",
+              ],
+              effectiveCoverageGap: 2,
+              effectiveQualificationGap: 1,
             },
           },
         ],
@@ -425,6 +443,23 @@ describe("Leadership day view integration", () => {
       detail: null,
       contextLine: null,
     });
+    expect(response.body.day.shifts).toEqual([
+      {
+        type: "early",
+        label: "Fruehdienst",
+        plannedCount: 1,
+        actualCount: 1,
+        qualification: {
+          status: "ok",
+        },
+        gap: {
+          primaryCause: "none",
+          signals: [],
+          effectiveCoverageGap: 0,
+          effectiveQualificationGap: 0,
+        },
+      },
+    ]);
   });
 
   it("shows qualification-function warnings as calm leadership context", async () => {
@@ -487,6 +522,12 @@ describe("Leadership day view integration", () => {
         actualCount: 1,
         qualification: {
           status: "ok",
+        },
+        gap: {
+          primaryCause: "none",
+          signals: [],
+          effectiveCoverageGap: 0,
+          effectiveQualificationGap: 0,
         },
       },
     ]);
@@ -683,6 +724,12 @@ describe("Leadership day view integration", () => {
         qualification: {
           status: "ok",
         },
+        gap: {
+          primaryCause: "operational",
+          signals: ["operational_coverage_gap"],
+          effectiveCoverageGap: 1,
+          effectiveQualificationGap: 0,
+        },
       },
     ]);
     expect(response.body.day.headline).toEqual({
@@ -690,6 +737,106 @@ describe("Leadership day view integration", () => {
       detail: "1 Schicht betroffen",
       contextLine: "Krankmeldung im Fruehdienst",
     });
+  });
+
+  it("exposes an absence-driven day shift gap when active absence reduces sufficient planning", async () => {
+    const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const uniqueYear = 2055 + (Date.now() % 25);
+    const date = `${uniqueYear}-05-16`;
+
+    const employees = await Promise.all([
+      prisma.employee.create({
+        data: {
+          name: `Leadership Absence Gap A ${suffix}`,
+          role: "nurse",
+          workload: 80,
+          qualified: true,
+        },
+      }),
+      prisma.employee.create({
+        data: {
+          name: `Leadership Absence Gap B ${suffix}`,
+          role: "nurse",
+          workload: 80,
+          qualified: true,
+        },
+      }),
+    ]);
+
+    const [employeeA, employeeB] = employees;
+
+    const shift = await prisma.shift.create({
+      data: {
+        date: new Date(`${date}T00:00:00.000Z`),
+        type: "early",
+        requiredCount: 2,
+        requiredQualifiedCount: 1,
+      },
+    });
+
+    const assignments = await Promise.all([
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeA.id,
+          shiftId: shift.id,
+          status: "planned",
+        },
+      }),
+      prisma.assignment.create({
+        data: {
+          employeeId: employeeB.id,
+          shiftId: shift.id,
+          status: "planned",
+        },
+      }),
+    ]);
+
+    const absence = await prisma.absence.create({
+      data: {
+        employeeId: employeeA.id,
+        type: "sick",
+        scope: "full_day",
+        startDate: new Date(`${date}T00:00:00.000Z`),
+        endDate: new Date(`${date}T00:00:00.000Z`),
+        status: "active",
+      },
+    });
+
+    testContexts.push({
+      employeeIds: employees.map((employee) => employee.id),
+      planningMonthIds: [],
+      shiftIds: [shift.id],
+      assignmentIds: assignments.map((assignment) => assignment.id),
+      absenceIds: [absence.id],
+      availabilityRequestIds: [],
+      dailySituationIds: [],
+    });
+
+    const response = await request(app).get("/leadership/day").query({ date });
+
+    expect(response.status).toBe(200);
+    expect(response.body.day.headline).toEqual({
+      title: "Unterdeckung",
+      detail: "1 Schicht betroffen",
+      contextLine: "keine aktuelle Veraenderung",
+    });
+    expect(response.body.day.shifts).toEqual([
+      {
+        type: "early",
+        label: "Fruehdienst",
+        plannedCount: 2,
+        actualCount: 1,
+        qualification: {
+          status: "ok",
+        },
+        gap: {
+          primaryCause: "absence",
+          signals: ["absence_driven_coverage_gap"],
+          effectiveCoverageGap: 1,
+          effectiveQualificationGap: 0,
+        },
+      },
+    ]);
   });
 
   it("shows a requested context line under understaffing when the shift was planned sufficiently before requested", async () => {
