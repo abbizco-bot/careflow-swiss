@@ -4,6 +4,7 @@ import type {
   PlanningShiftTemplate,
 } from "../../generated/prisma/client";
 import { availabilityRequestsRepository } from "../availability-requests/availability-requests.repository";
+import { derivePlanningState } from "../planning-state/planning-state";
 import {
   buildShiftOperationalAvailabilityMap,
   type ShiftOperationalAvailability,
@@ -62,6 +63,15 @@ export const planningComparisonService = {
         range.endDate
       ),
     ]);
+    const planningState = derivePlanningState({
+      hasImportedPlan: false,
+      hasPlanningMonth: true,
+      planningDayCount: planningMonth.planningDays.length,
+      planningShiftTemplateCount: countPlanningShiftTemplates(planningMonth),
+      operationalShiftCount: operationalShifts.length,
+      hasFrozenReferencePlan: false,
+      isClosedPeriod: false,
+    });
     const availabilityByShiftId =
       await buildShiftOperationalAvailabilityMap(operationalShifts);
     const operationalShiftsWithAvailability = operationalShifts.map((shift) =>
@@ -78,6 +88,8 @@ export const planningComparisonService = {
         availabilityRequests
       )
     );
+    // Internal readiness signal only; intentionally not part of the API response yet.
+    void planningState;
 
     return {
       planningMonth: {
@@ -91,6 +103,13 @@ export const planningComparisonService = {
     };
   },
 };
+
+function countPlanningShiftTemplates(planningMonth: PlanningMonthWithDays) {
+  return planningMonth.planningDays.reduce(
+    (total, planningDay) => total + planningDay.shiftTemplates.length,
+    0
+  );
+}
 
 function buildMonthRange(planningMonth: PlanningMonth) {
   const startDate = new Date(
