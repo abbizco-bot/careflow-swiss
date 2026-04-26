@@ -6,6 +6,7 @@ import {
   type GapInterpretationResult,
   type GapPrimaryCause,
 } from "../shared/gap-interpretation/gap-interpretation";
+import { deriveLeadershipGapSeverity } from "./leadership-gap-severity";
 import { leadershipViewRepository } from "./leadership-view.repository";
 import type {
   LeadershipDayHeadlineView,
@@ -655,6 +656,11 @@ function buildShiftRows(
           signals: gapContext.primaryGapSignals,
           effectiveCoverageGap: gapContext.effectiveCoverageGap,
           effectiveQualificationGap: gapContext.effectiveQualificationGap,
+          severity: deriveLeadershipGapSeverity({
+            primaryCause: gapContext.primaryGapCause,
+            effectiveCoverageGap: gapContext.effectiveCoverageGap,
+            effectiveQualificationGap: gapContext.effectiveQualificationGap,
+          }),
         },
       };
     });

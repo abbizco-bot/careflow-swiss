@@ -4,6 +4,7 @@ import type {
   GapInterpretationSignalCode,
   GapPrimaryCause,
 } from "../shared/gap-interpretation/gap-interpretation";
+import type { LeadershipGapSeverity } from "./leadership-gap-severity";
 
 export interface LeadershipDayHeadlineView {
   title: string;
@@ -20,6 +21,7 @@ export interface LeadershipDayShiftGapView {
   signals: GapInterpretationSignalCode[];
   effectiveCoverageGap: number;
   effectiveQualificationGap: number;
+  severity: LeadershipGapSeverity;
 }
 
 export interface LeadershipDayShiftView {

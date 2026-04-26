@@ -331,6 +331,7 @@ describe("Leadership day view integration", () => {
               ],
               effectiveCoverageGap: 2,
               effectiveQualificationGap: 1,
+              severity: "critical",
             },
           },
           {
@@ -349,6 +350,7 @@ describe("Leadership day view integration", () => {
               ],
               effectiveCoverageGap: 2,
               effectiveQualificationGap: 1,
+              severity: "critical",
             },
           },
         ],
@@ -457,6 +459,7 @@ describe("Leadership day view integration", () => {
           signals: [],
           effectiveCoverageGap: 0,
           effectiveQualificationGap: 0,
+          severity: "none",
         },
       },
     ]);
@@ -528,6 +531,7 @@ describe("Leadership day view integration", () => {
           signals: [],
           effectiveCoverageGap: 0,
           effectiveQualificationGap: 0,
+          severity: "none",
         },
       },
     ]);
@@ -582,6 +586,24 @@ describe("Leadership day view integration", () => {
       detail: null,
       contextLine: null,
     });
+    expect(response.body.day.shifts).toEqual([
+      {
+        type: "early",
+        label: "Fruehdienst",
+        plannedCount: 0,
+        actualCount: 0,
+        qualification: {
+          status: "ok",
+        },
+        gap: {
+          primaryCause: "request_context",
+          signals: ["request_context_only"],
+          effectiveCoverageGap: 0,
+          effectiveQualificationGap: 0,
+          severity: "attention",
+        },
+      },
+    ]);
   });
 
   it("returns 'Krankmeldung im [Schichtname]' when sick is the highest priority signal", async () => {
@@ -729,6 +751,7 @@ describe("Leadership day view integration", () => {
           signals: ["operational_coverage_gap"],
           effectiveCoverageGap: 1,
           effectiveQualificationGap: 0,
+          severity: "critical",
         },
       },
     ]);
@@ -834,6 +857,7 @@ describe("Leadership day view integration", () => {
           signals: ["absence_driven_coverage_gap"],
           effectiveCoverageGap: 1,
           effectiveQualificationGap: 0,
+          severity: "critical",
         },
       },
     ]);
