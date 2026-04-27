@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildImportDryRunResult } from "./import-dry-run-result";
 import type {
   DraftPlanCandidatePreview,
+  ImportDryRunIssueCode,
   ImportDryRunIssue,
   ImportDryRunPeriod,
   ImportDryRunRow,
@@ -29,11 +30,12 @@ const rows: ImportDryRunRow[] = [
 
 function buildIssue(
   severity: ImportDryRunIssue["severity"],
-  blocking: boolean
+  blocking: boolean,
+  code: ImportDryRunIssueCode = "required_field_missing"
 ): ImportDryRunIssue {
   return {
     severity,
-    code: `IMPORT_${severity.toUpperCase()}`,
+    code,
     message: `${severity} issue`,
     blocking,
   };

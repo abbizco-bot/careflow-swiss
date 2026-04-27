@@ -12,6 +12,26 @@ export type ImportDryRunStatus =
 
 export type ImportIssueSeverity = "error" | "warning" | "info";
 
+export type ImportDryRunIssueCode =
+  | "source_format_unknown"
+  | "required_field_missing"
+  | "invalid_date"
+  | "date_outside_period"
+  | "employee_unmapped"
+  | "employee_duplicate_match"
+  | "shift_type_unmapped"
+  | "qualification_unmapped"
+  | "daily_function_unmapped"
+  | "absence_type_unmapped"
+  | "status_unmapped"
+  | "area_unmapped"
+  | "mapping_profile_missing"
+  | "mapping_profile_incomplete"
+  | "duplicate_row"
+  | "conflicting_assignment"
+  | "import_would_create_operational_shift_blocked"
+  | "import_would_create_reference_plan_blocked";
+
 export type ImportMappingDimension =
   | "employee"
   | "shift_type"
@@ -82,7 +102,7 @@ export interface ImportDryRunRow {
 
 export interface ImportDryRunIssue {
   severity: ImportIssueSeverity;
-  code: string;
+  code: ImportDryRunIssueCode;
   message: string;
   blocking: boolean;
   rowRef?: {
