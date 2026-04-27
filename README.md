@@ -43,6 +43,51 @@ CareFlow unterscheidet zwischen stabiler Grundqualifikation und tagesbezogener F
 
 Der Full-Endpoint orchestriert bestehende Validations. Er soll fachliche Warnungen sichtbar machen, aber keine Assignments blockieren oder veraendern.
 
+## MVP Demo
+
+CareFlow besitzt eine reproduzierbare lokale MVP-Demo. Sie zeigt CareFlow als Fuehrungs- und Decision-Layer, nicht als automatisches Dienstplanungssystem.
+
+Die Demo umfasst:
+
+- stable day
+- attention/request-context day
+- critical operational gap
+- critical qualification gap
+- absence-driven gap
+- mixed gap
+- planning comparison scenario
+
+Demo-Daten werden lokal erzeugt mit:
+
+```bash
+npm run seed:mvp
+```
+
+Das Script erzeugt Demo-Daten fuer Demo-Year `2088`, setzt bestehende Demo-Daten im Demo-Bereich zurueck und gibt die dynamische `PlanningMonth.id` fuer Planning Comparison aus.
+
+`npm run seed:mvp` ist nur fuer lokale Demo- und Entwicklungsdaten gedacht. Nicht gegen Produktivdatenbanken ausfuehren.
+
+Die Demo nutzt insbesondere diese API-Bereiche:
+
+- `/leadership/day`
+- `/leadership/week`
+- `/leadership/month`
+- `/planning-months/:id/comparison`
+
+Der reproduzierbare Ablauf ist im Runbook dokumentiert:
+
+- `docs/governance/mvp-demo-runbook-v0.1.md`
+
+Ergaenzende Governance-Dokumente:
+
+- `docs/governance/mvp-scope-v0.2.md`
+- `docs/governance/mvp-demo-scenarios-v0.1.md`
+- `docs/governance/mvp-api-contract-v0.1.md`
+- `docs/governance/mvp-demo-seed-strategy-v0.1.md`
+- `docs/governance/mvp-demo-runbook-v0.1.md`
+
+Die MVP-Demo enthaelt bewusst keinen produktiven Import, keine automatische Dienstplanung, keine personenbezogene Gap-Ausgabe, keinen ReferencePlan-Freeze, kein PeriodClosing und keine Frontend-Demo, solange kein Frontend integriert ist.
+
 ## Tests
 
 Die Tests laufen ueber den bestehenden npm-Test-Harness.
