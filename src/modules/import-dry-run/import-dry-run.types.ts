@@ -63,6 +63,42 @@ export interface MappingProfilePreview {
   mappingDimensions?: ImportMappingDimension[];
 }
 
+export interface MappingProfile {
+  id?: string;
+  name: string;
+  sourceType?: ImportSourceType;
+  sourceSystemName?: string;
+  version?: string;
+  dimensions: MappingProfileDimensions;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MappingProfileDimensions {
+  employees?: MappingDimensionDefinition;
+  shiftTypes?: MappingDimensionDefinition;
+  qualifications?: MappingDimensionDefinition;
+  dailyFunctions?: MappingDimensionDefinition;
+  absences?: MappingDimensionDefinition;
+  statuses?: MappingDimensionDefinition;
+  areas?: MappingDimensionDefinition;
+  dateTime?: MappingDimensionDefinition;
+  sourceMetadata?: MappingDimensionDefinition;
+}
+
+export interface MappingDimensionDefinition {
+  sourceFields?: string[];
+  rules?: MappingRulePreview[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface MappingRulePreview {
+  sourceValue?: unknown;
+  targetValue?: unknown;
+  description?: string;
+  confidence?: "manual" | "inferred" | "unknown";
+  metadata?: Record<string, unknown>;
+}
+
 export interface ImportDryRunMapping {
   mappingProfileId?: string;
   inlineMappingProfile?: MappingProfilePreview;
