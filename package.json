@@ -10,6 +10,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "seed:mvp": "npm run build && node dist/scripts/seed-mvp-demo-data.js",
     "test": "vitest run --pool threads"
   },
   "keywords": [],
