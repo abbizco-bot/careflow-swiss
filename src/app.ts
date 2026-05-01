@@ -8,6 +8,7 @@ import validationsRouter from "./modules/validations/validations.routes";
 import absenceRouter from "./modules/absences/absence.routes";
 import availabilityRequestsRouter from "./modules/availability-requests/availability-requests.routes";
 import planningMonthsRouter from "./modules/planning-months/planning-months.routes";
+import rollingPlanningViewRouter from "./modules/rolling-planning-view/rolling-planning-view.routes";
 
 type CreateAppOptions = {
   includeValidations?: boolean;
@@ -28,6 +29,7 @@ export function createApp(_options: CreateAppOptions = {}) {
   app.use("/employees", employeesRouter);
   app.use("/validations", validationsRouter);
   app.use("/leadership", leadershipViewRouter);
+  app.use("/rolling-planning", rollingPlanningViewRouter);
   app.use("/absences", absenceRouter);
   app.use("/availability-requests", availabilityRequestsRouter);
   app.use("/planning-months", planningMonthsRouter);
