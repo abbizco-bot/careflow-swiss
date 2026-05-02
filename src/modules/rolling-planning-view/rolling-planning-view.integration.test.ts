@@ -92,6 +92,36 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     });
   });
 
+  it("signals a draft planning day with draft plan status", async () => {
+    const planningMonth = await prisma.planningMonth.create({
+      data: {
+        year: 2026,
+        month: 5,
+        status: "draft",
+      },
+    });
+
+    await prisma.planningDay.create({
+      data: {
+        planningMonthId: planningMonth.id,
+        date: new Date(Date.UTC(2026, 4, 1)),
+        isSpecialDay: false,
+      },
+    });
+
+    testContexts.push({ planningMonthIds: [planningMonth.id] });
+
+    const response = await request(app)
+      .get("/rolling-planning/window?startDate=2026-05-01&windowDays=7");
+
+    expect(response.status).toBe(200);
+    expect(response.body.days[0]).toMatchObject({
+      date: "2026-05-01",
+      hasReferencePlan: false,
+      dataStatus: "draft_plan",
+    });
+  });
+
   it("rejects missing startDate", async () => {
     const response = await request(app)
       .get("/rolling-planning/window?windowDays=28");
