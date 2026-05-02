@@ -293,4 +293,246 @@ describe("Availability request controlled usability integration", () => {
     expect(dayCountAfter).toBe(dayCountBefore);
     expect(templateCountAfter).toBe(templateCountBefore);
   });
+
+  it("updates availability request status to approved without changing staffing records", async () => {
+    const uniqueYear = 2028 + (Date.now() % 20);
+
+    const employee = await prisma.employee.create({
+      data: {
+        name: `Availability Request Approved ${Date.now()}`,
+        role: "nurse",
+        workload: 70,
+        qualified: false,
+      },
+    });
+
+    const planningMonth = await prisma.planningMonth.create({
+      data: {
+        year: uniqueYear,
+        month: 11,
+        status: "draft",
+      },
+    });
+
+    const shift = await prisma.shift.create({
+      data: {
+        date: new Date("2026-11-05T00:00:00.000Z"),
+        type: "late",
+        requiredCount: 2,
+        requiredQualifiedCount: 1,
+      },
+    });
+
+    const assignment = await prisma.assignment.create({
+      data: {
+        employeeId: employee.id,
+        shiftId: shift.id,
+        status: "planned",
+      },
+    });
+
+    const requestRecord = await prisma.availabilityRequest.create({
+      data: {
+        employeeId: employee.id,
+        type: "wish_free",
+        startDate: new Date("2026-11-05T00:00:00.000Z"),
+        endDate: null,
+        isFullDay: true,
+        note: "Family event",
+        priority: "high",
+        status: "submitted",
+      },
+    });
+
+    testContexts.push({
+      employeeIds: [employee.id],
+      availabilityRequestIds: [requestRecord.id],
+      planningMonthIds: [planningMonth.id],
+      shiftIds: [shift.id],
+      assignmentIds: [assignment.id],
+    });
+
+    const planningMonthBefore = await prisma.planningMonth.findUnique({
+      where: { id: planningMonth.id },
+    });
+    const shiftBefore = await prisma.shift.findUnique({
+      where: { id: shift.id },
+    });
+    const assignmentBefore = await prisma.assignment.findUnique({
+      where: { id: assignment.id },
+    });
+    const dayCountBefore = await prisma.planningDay.count({
+      where: {
+        planningMonthId: planningMonth.id,
+      },
+    });
+    const templateCountBefore = await prisma.planningShiftTemplate.count({
+      where: {
+        planningDay: {
+          planningMonthId: planningMonth.id,
+        },
+      },
+    });
+
+    const response = await request(app)
+      .patch(`/availability-requests/${requestRecord.id}/status`)
+      .send({
+        status: "approved",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      id: requestRecord.id,
+      status: "approved",
+    });
+
+    const planningMonthAfter = await prisma.planningMonth.findUnique({
+      where: { id: planningMonth.id },
+    });
+    const shiftAfter = await prisma.shift.findUnique({
+      where: { id: shift.id },
+    });
+    const assignmentAfter = await prisma.assignment.findUnique({
+      where: { id: assignment.id },
+    });
+    const dayCountAfter = await prisma.planningDay.count({
+      where: {
+        planningMonthId: planningMonth.id,
+      },
+    });
+    const templateCountAfter = await prisma.planningShiftTemplate.count({
+      where: {
+        planningDay: {
+          planningMonthId: planningMonth.id,
+        },
+      },
+    });
+
+    expect(planningMonthBefore).toEqual(planningMonthAfter);
+    expect(shiftBefore).toEqual(shiftAfter);
+    expect(assignmentBefore).toEqual(assignmentAfter);
+    expect(dayCountAfter).toBe(dayCountBefore);
+    expect(templateCountAfter).toBe(templateCountBefore);
+  });
+
+  it("updates availability request status to rejected without changing staffing records", async () => {
+    const uniqueYear = 2030 + (Date.now() % 20);
+
+    const employee = await prisma.employee.create({
+      data: {
+        name: `Availability Request Rejected ${Date.now()}`,
+        role: "nurse",
+        workload: 70,
+        qualified: false,
+      },
+    });
+
+    const planningMonth = await prisma.planningMonth.create({
+      data: {
+        year: uniqueYear,
+        month: 12,
+        status: "draft",
+      },
+    });
+
+    const shift = await prisma.shift.create({
+      data: {
+        date: new Date("2026-12-10T00:00:00.000Z"),
+        type: "early",
+        requiredCount: 1,
+        requiredQualifiedCount: 1,
+      },
+    });
+
+    const assignment = await prisma.assignment.create({
+      data: {
+        employeeId: employee.id,
+        shiftId: shift.id,
+        status: "planned",
+      },
+    });
+
+    const requestRecord = await prisma.availabilityRequest.create({
+      data: {
+        employeeId: employee.id,
+        type: "absence",
+        startDate: new Date("2026-12-10T00:00:00.000Z"),
+        endDate: null,
+        isFullDay: true,
+        note: "Personal reason",
+        priority: "medium",
+        status: "submitted",
+      },
+    });
+
+    testContexts.push({
+      employeeIds: [employee.id],
+      availabilityRequestIds: [requestRecord.id],
+      planningMonthIds: [planningMonth.id],
+      shiftIds: [shift.id],
+      assignmentIds: [assignment.id],
+    });
+
+    const planningMonthBefore = await prisma.planningMonth.findUnique({
+      where: { id: planningMonth.id },
+    });
+    const shiftBefore = await prisma.shift.findUnique({
+      where: { id: shift.id },
+    });
+    const assignmentBefore = await prisma.assignment.findUnique({
+      where: { id: assignment.id },
+    });
+    const dayCountBefore = await prisma.planningDay.count({
+      where: {
+        planningMonthId: planningMonth.id,
+      },
+    });
+    const templateCountBefore = await prisma.planningShiftTemplate.count({
+      where: {
+        planningDay: {
+          planningMonthId: planningMonth.id,
+        },
+      },
+    });
+
+    const response = await request(app)
+      .patch(`/availability-requests/${requestRecord.id}/status`)
+      .send({
+        status: "rejected",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      id: requestRecord.id,
+      status: "rejected",
+    });
+
+    const planningMonthAfter = await prisma.planningMonth.findUnique({
+      where: { id: planningMonth.id },
+    });
+    const shiftAfter = await prisma.shift.findUnique({
+      where: { id: shift.id },
+    });
+    const assignmentAfter = await prisma.assignment.findUnique({
+      where: { id: assignment.id },
+    });
+    const dayCountAfter = await prisma.planningDay.count({
+      where: {
+        planningMonthId: planningMonth.id,
+      },
+    });
+    const templateCountAfter = await prisma.planningShiftTemplate.count({
+      where: {
+        planningDay: {
+          planningMonthId: planningMonth.id,
+        },
+      },
+    });
+
+    expect(planningMonthBefore).toEqual(planningMonthAfter);
+    expect(shiftBefore).toEqual(shiftAfter);
+    expect(assignmentBefore).toEqual(assignmentAfter);
+    expect(dayCountAfter).toBe(dayCountBefore);
+    expect(templateCountAfter).toBe(templateCountBefore);
+  });
 });
