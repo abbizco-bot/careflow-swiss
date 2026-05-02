@@ -55,6 +55,7 @@ describe("Planning month controlled usability integration", () => {
       month: 6,
       status: "draft",
     });
+    expect(createResponse.body.publicationState).toBe("working_draft");
 
     expect(listResponse.status).toBe(200);
     expect(
@@ -63,6 +64,12 @@ describe("Planning month controlled usability integration", () => {
           planningMonth.id === createResponse.body.id
       )
     ).toBe(true);
+    expect(
+      listResponse.body.find(
+        (planningMonth: { id: number }) =>
+          planningMonth.id === createResponse.body.id
+      )?.publicationState
+    ).toBe("working_draft");
 
     expect(getResponse.status).toBe(200);
     expect(getResponse.body).toMatchObject({
@@ -71,6 +78,7 @@ describe("Planning month controlled usability integration", () => {
       month: 6,
       status: "draft",
     });
+    expect(getResponse.body.publicationState).toBe("working_draft");
   });
 
   it("rejects nested planning day creation on planning month create", async () => {

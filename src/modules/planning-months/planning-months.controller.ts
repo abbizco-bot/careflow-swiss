@@ -10,6 +10,7 @@ import {
   listPlanningShiftTemplates,
   updatePlanningShiftTemplate,
 } from "./planning-months.service";
+import { derivePlanningPublicationState } from "./planning-publication-state";
 import type {
   CreatePlanningMonthInput,
   CreatePlanningShiftTemplateInput,
@@ -211,13 +212,32 @@ function handlePlanningMonthError(res: Response, error: unknown): boolean {
   return false;
 }
 
+function mapPlanningMonthResponse(planningMonth: unknown): unknown {
+  if (
+    typeof planningMonth !== "object" ||
+    planningMonth === null ||
+    !("status" in planningMonth)
+  ) {
+    return planningMonth;
+  }
+
+  const month = planningMonth as { status: unknown };
+
+  return {
+    ...planningMonth,
+    publicationState: derivePlanningPublicationState(
+      typeof month.status === "string" ? month.status : ""
+    ),
+  };
+}
+
 export async function listPlanningMonthsHandler(
   _req: Request,
   res: Response
 ): Promise<void> {
   try {
     const planningMonths = await listPlanningMonths();
-    res.status(200).json(planningMonths);
+    res.status(200).json(planningMonths.map(mapPlanningMonthResponse));
   } catch (error) {
     console.error("Failed to load planning months:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -231,7 +251,7 @@ export async function getPlanningMonthHandler(
   try {
     const id = parseEntityId(req.params.id, "planningMonth");
     const planningMonth = await getPlanningMonthById(id);
-    res.status(200).json(planningMonth);
+    res.status(200).json(mapPlanningMonthResponse(planningMonth));
   } catch (error) {
     if (handlePlanningMonthError(res, error)) {
       return;
@@ -249,7 +269,7 @@ export async function createPlanningMonthHandler(
   try {
     const payload = parseCreatePlanningMonthPayload(req.body);
     const planningMonth = await createPlanningMonth(payload);
-    res.status(201).json(planningMonth);
+    res.status(201).json(mapPlanningMonthResponse(planningMonth));
   } catch (error) {
     if (handlePlanningMonthError(res, error)) {
       return;
@@ -325,7 +345,7 @@ export async function createPlanningShiftTemplateHandler(
       planningDayId,
       payload
     );
-    res.status(201).json(planningShiftTemplate);
+  res.status(201).json(planningShiftTemplate);
   } catch (error) {
     if (handlePlanningMonthError(res, error)) {
       return;
