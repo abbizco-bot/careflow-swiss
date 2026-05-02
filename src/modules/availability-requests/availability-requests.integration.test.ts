@@ -294,6 +294,52 @@ describe("Availability request controlled usability integration", () => {
     expect(templateCountAfter).toBe(templateCountBefore);
   });
 
+  it("rejects invalid availability request status values", async () => {
+    const employee = await prisma.employee.create({
+      data: {
+        name: `Availability Request Invalid Status Test ${Date.now()}`,
+        role: "nurse",
+        workload: 70,
+        qualified: true,
+      },
+    });
+
+    const requestRecord = await prisma.availabilityRequest.create({
+      data: {
+        employeeId: employee.id,
+        type: "wish_free",
+        startDate: new Date("2026-10-01T00:00:00.000Z"),
+        endDate: new Date("2026-10-02T00:00:00.000Z"),
+        isFullDay: true,
+        note: "Test invalid status",
+        priority: "medium",
+        status: "submitted",
+      },
+    });
+
+    testContexts.push({
+      employeeIds: [employee.id],
+      availabilityRequestIds: [requestRecord.id],
+      planningMonthIds: [],
+      shiftIds: [],
+      assignmentIds: [],
+    });
+
+    const response = await request(app)
+      .patch(`/availability-requests/${requestRecord.id}/status`)
+      .send({
+        status: "invalid_status",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "status must be one of: submitted, reviewed, approved, rejected",
+      },
+    });
+  });
+
   it("updates availability request status to approved without changing staffing records", async () => {
     const uniqueYear = 2028 + (Date.now() % 20);
 
