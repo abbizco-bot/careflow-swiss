@@ -23,4 +23,25 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     expect(response.body.days[0].date).toBe("2026-05-01");
     expect(response.body.days[27].date).toBe("2026-05-28");
   });
+
+  it("rejects missing startDate", async () => {
+    const response = await request(app)
+      .get("/rolling-planning/window?windowDays=28");
+
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects invalid startDate format", async () => {
+    const response = await request(app)
+      .get("/rolling-planning/window?startDate=invalid-date&windowDays=28");
+
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects windowDays below allowed range", async () => {
+    const response = await request(app)
+      .get("/rolling-planning/window?startDate=2026-05-01&windowDays=0");
+
+    expect(response.status).toBe(400);
+  });
 });
