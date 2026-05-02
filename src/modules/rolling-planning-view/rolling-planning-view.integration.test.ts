@@ -18,5 +18,9 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     for (let i = 0; i < response.body.days.length - 1; i++) {
       expect(response.body.days[i].date <= response.body.days[i + 1].date).toBe(true);
     }
+
+    // Boundary contract: first and last day
+    expect(response.body.days[0].date).toBe("2026-05-01");
+    expect(response.body.days[27].date).toBe("2026-05-28");
   });
 });
