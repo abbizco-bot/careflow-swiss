@@ -313,6 +313,7 @@ describe("Leadership day view integration", () => {
           title: "Unterdeckung",
           detail: "2 Schichten betroffen",
           contextLine: "keine aktuelle Veraenderung",
+          visibilityContext: "publication_relevant_context",
         },
         shifts: [
           {
@@ -444,6 +445,7 @@ describe("Leadership day view integration", () => {
       title: "stabil",
       detail: null,
       contextLine: null,
+      visibilityContext: "no_visibility_action",
     });
     expect(response.body.day.shifts).toEqual([
       {
@@ -516,6 +518,7 @@ describe("Leadership day view integration", () => {
       detail: "1 Schicht betroffen",
       contextLine:
         "Hausverantwortung passt nicht zur Stammqualifikation FAGE",
+      visibilityContext: "internal_leadership_context",
     });
     expect(response.body.day.shifts).toEqual([
       {
@@ -585,6 +588,7 @@ describe("Leadership day view integration", () => {
       title: "unsichere Besetzung im Fruehdienst",
       detail: null,
       contextLine: null,
+      visibilityContext: "internal_leadership_context",
     });
     expect(response.body.day.shifts).toEqual([
       {
@@ -759,6 +763,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "Krankmeldung im Fruehdienst",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -842,6 +847,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "keine aktuelle Veraenderung",
+      visibilityContext: "publication_relevant_context",
     });
     expect(response.body.day.shifts).toEqual([
       {
@@ -947,6 +953,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "unsichere Besetzung im Spaetdienst",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1057,6 +1064,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "2 Schichten betroffen",
       contextLine: "Krankmeldung und unsichere Besetzung in mehreren Schichten",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1140,6 +1148,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "keine aktuelle Veraenderung",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1257,6 +1266,7 @@ describe("Leadership day view integration", () => {
       title: "Qualifikation unzureichend",
       detail: "1 Schicht betroffen",
       contextLine: "keine aktuelle Veraenderung",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1374,6 +1384,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "Krankmeldung im Fruehdienst",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1498,6 +1509,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "1 Schicht betroffen",
       contextLine: "unsichere Besetzung im Fruehdienst",
+      visibilityContext: "publication_relevant_context",
     });
   });
 
@@ -1619,6 +1631,7 @@ describe("Leadership day view integration", () => {
       title: "Unterdeckung",
       detail: "2 Schichten betroffen",
       contextLine: "Krankmeldung im Fruehdienst",
+      visibilityContext: "publication_relevant_context",
     });
   });
 

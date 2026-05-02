@@ -7,6 +7,7 @@ import {
   type GapPrimaryCause,
 } from "../shared/gap-interpretation/gap-interpretation";
 import { deriveLeadershipGapSeverity } from "./leadership-gap-severity";
+import { deriveLeadershipVisibilityContext } from "./visibility-context";
 import { leadershipViewRepository } from "./leadership-view.repository";
 import type {
   LeadershipDayHeadlineView,
@@ -726,6 +727,24 @@ function mergeLeadershipDayPrimaryCause(
   return "mixed";
 }
 
+function mergeLeadershipDayGap(
+  left: LeadershipDayGapContext,
+  right: LeadershipDayGapContext
+): LeadershipDayGapContext {
+  return {
+    gapSignals: [...left.gapSignals, ...right.gapSignals],
+    effectiveCoverageGap:
+      left.effectiveCoverageGap + right.effectiveCoverageGap,
+    effectiveQualificationGap:
+      left.effectiveQualificationGap + right.effectiveQualificationGap,
+    primaryGapCause: mergeLeadershipDayPrimaryCause(
+      left.primaryGapCause,
+      right.primaryGapCause
+    ),
+    primaryGapSignals: [...left.primaryGapSignals, ...right.primaryGapSignals],
+  };
+}
+
 function emptyLeadershipDayGap(): LeadershipDayGapContext {
   return {
     gapSignals: [],
@@ -736,7 +755,7 @@ function emptyLeadershipDayGap(): LeadershipDayGapContext {
   };
 }
 
-function buildLeadershipDayHeadline(input: {
+export function buildLeadershipDayHeadline(input: {
   shiftSignals: LeadershipDayShiftSignal[];
   fullValidations: Array<{
     coverage: {
@@ -758,25 +777,9 @@ function buildLeadershipDayHeadline(input: {
     (validation) => validation.coverage.status === "understaffed"
   ).length;
 
-  if (coverageShiftCount > 0) {
-    return {
-      title: "Unterdeckung",
-      detail: buildHeadlineAffectedShiftsDetail(coverageShiftCount),
-      contextLine,
-    };
-  }
-
   const qualificationShiftCount = input.fullValidations.filter(
     (validation) => validation.qualification.status === "underqualified"
   ).length;
-
-  if (qualificationShiftCount > 0) {
-    return {
-      title: "Qualifikation unzureichend",
-      detail: buildHeadlineAffectedShiftsDetail(qualificationShiftCount),
-      contextLine,
-    };
-  }
 
   const qualificationFunctionIssues = input.fullValidations.flatMap(
     (validation) =>
@@ -785,8 +788,51 @@ function buildLeadershipDayHeadline(input: {
       )
   );
 
+  const dayGapContext = input.shiftSignals
+    .map((signal) => signal.gapContext)
+    .reduce(mergeLeadershipDayGap, emptyLeadershipDayGap());
+
+  const gapSeverity = deriveLeadershipGapSeverity({
+    effectiveCoverageGap: dayGapContext.effectiveCoverageGap,
+    effectiveQualificationGap: dayGapContext.effectiveQualificationGap,
+    primaryCause: dayGapContext.primaryGapCause,
+  });
+
+  const postingVisibilityContext = deriveLeadershipVisibilityContext({
+    gapSeverity,
+    hasRequestContext: input.shiftSignals.some(
+      (signal) => signal.requestedCount > 0
+    ),
+    hasAbsenceDrivenGap: input.shiftSignals.some(
+      (signal) => signal.gapContext.primaryGapCause === "absence"),
+    hasQualificationWarning:
+      qualificationShiftCount > 0 || qualificationFunctionIssues.length > 0,
+  });
+
+  const headlineBase = {
+    contextLine,
+    visibilityContext: postingVisibilityContext,
+  };
+
+  if (coverageShiftCount > 0) {
+    return {
+      ...headlineBase,
+      title: "Unterdeckung",
+      detail: buildHeadlineAffectedShiftsDetail(coverageShiftCount),
+    };
+  }
+
+  if (qualificationShiftCount > 0) {
+    return {
+      ...headlineBase,
+      title: "Qualifikation unzureichend",
+      detail: buildHeadlineAffectedShiftsDetail(qualificationShiftCount),
+    };
+  }
+
   if (qualificationFunctionIssues.length > 0) {
     return {
+      ...headlineBase,
       title: "Funktionshinweis",
       detail: buildHeadlineAffectedShiftsDetail(
         countAffectedShifts(qualificationFunctionIssues)
@@ -815,6 +861,7 @@ function buildLeadershipDayHeadline(input: {
 
   if (requestedHeadline) {
     return {
+      ...headlineBase,
       title: requestedHeadline,
       detail: null,
       contextLine: null,
@@ -822,6 +869,7 @@ function buildLeadershipDayHeadline(input: {
   }
 
   return {
+    ...headlineBase,
     title: "stabil",
     detail: null,
     contextLine: null,

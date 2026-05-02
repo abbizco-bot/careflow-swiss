@@ -6,10 +6,13 @@ import type {
 } from "../shared/gap-interpretation/gap-interpretation";
 import type { LeadershipGapSeverity } from "./leadership-gap-severity";
 
+import type { LeadershipVisibilityContext } from "./visibility-context";
+
 export interface LeadershipDayHeadlineView {
   title: string;
   detail: string | null;
   contextLine: string | null;
+  visibilityContext?: LeadershipVisibilityContext;
 }
 
 export interface LeadershipDayShiftQualificationView {
