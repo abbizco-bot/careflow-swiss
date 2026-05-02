@@ -44,4 +44,16 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
 
     expect(response.status).toBe(400);
   });
+
+  it("returns a rolling planning window with 7 days", async () => {
+    const response = await request(app)
+      .get("/rolling-planning/window?startDate=2026-05-01&windowDays=7");
+
+    expect(response.status).toBe(200);
+    expect(response.body.days).toBeDefined();
+    expect(Array.isArray(response.body.days)).toBe(true);
+    expect(response.body.days).toHaveLength(7);
+    expect(response.body.days[0].date).toBe("2026-05-01");
+    expect(response.body.days[6].date).toBe("2026-05-07");
+  });
 });
