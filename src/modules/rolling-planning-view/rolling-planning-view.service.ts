@@ -16,21 +16,33 @@ import type {
   RollingPlanningSummary,
 } from "./rolling-planning-view.types";
 
+function startOfUtcDay(date: Date): Date {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
+}
+
 export const rollingPlanningViewService = {
   async getRollingPlanningWindow(
     startDate: Date,
     windowDays: number
   ): Promise<RollingPlanningView> {
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + windowDays);
+    const startDateUtc = startOfUtcDay(startDate);
+    const endDate = new Date(startDateUtc);
+    endDate.setUTCDate(endDate.getUTCDate() + windowDays);
 
-    const [operationalShifts, availabilityRequests] = await Promise.all([
-      rollingPlanningViewRepository.findOperationalShiftsByDateRange(
-        startDate,
-        endDate
-      ),
-      availabilityRequestsRepository.findByDateRange(startDate, endDate),
-    ]);
+    const [operationalShifts, availabilityRequests, planningDays] =
+      await Promise.all([
+        rollingPlanningViewRepository.findOperationalShiftsByDateRange(
+          startDateUtc,
+          endDate
+        ),
+        availabilityRequestsRepository.findByDateRange(startDateUtc, endDate),
+        rollingPlanningViewRepository.findPlanningDaysWithMonthStatusByDateRange(
+          startDateUtc,
+          endDate
+        ),
+      ]);
 
     const availabilityByShiftId =
       await buildShiftOperationalAvailabilityMap(operationalShifts);
@@ -38,9 +50,9 @@ export const rollingPlanningViewService = {
     const dayMap = new Map<string, RollingPlanningDay>();
 
     for (
-      let d = new Date(startDate);
+      let d = new Date(startDateUtc);
       d < endDate;
-      d.setDate(d.getDate() + 1)
+      d.setUTCDate(d.getUTCDate() + 1)
     ) {
       const dateStr = d.toISOString().split("T")[0];
       dayMap.set(dateStr, {
@@ -49,6 +61,26 @@ export const rollingPlanningViewService = {
         hasReferencePlan: false,
         dataStatus: "operational_only",
       });
+    }
+
+    const planningDayStatusByDate = new Map<string, string>();
+    for (const planningDay of planningDays) {
+      const dateStr = planningDay.date.toISOString().split("T")[0];
+      planningDayStatusByDate.set(dateStr, planningDay.planningMonth.status);
+    }
+
+    for (const [dateStr, day] of dayMap) {
+      const planningMonthStatus = planningDayStatusByDate.get(dateStr);
+      if (planningMonthStatus === "draft") {
+        day.hasReferencePlan = false;
+        day.dataStatus = "draft_plan";
+      } else if (
+        planningMonthStatus === "active" ||
+        planningMonthStatus === "finalized"
+      ) {
+        day.hasReferencePlan = true;
+        day.dataStatus = "reference_plan";
+      }
     }
 
     const shiftsGroupedByDate = new Map<string, typeof operationalShifts>();

@@ -41,4 +41,30 @@ export const rollingPlanningViewRepository = {
       ],
     });
   },
+
+  async findPlanningDaysWithMonthStatusByDateRange(
+    startDate: Date,
+    endDate: Date
+  ) {
+    return prisma.planningDay.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: {
+        planningMonth: {
+          select: {
+            status: true,
+          },
+        },
+      },
+      orderBy: [
+        {
+          date: "asc",
+        },
+      ],
+    });
+  },
 };
