@@ -22,6 +22,11 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     // Boundary contract: first and last day
     expect(response.body.days[0].date).toBe("2026-05-01");
     expect(response.body.days[27].date).toBe("2026-05-28");
+
+    const firstDay = response.body.days[0];
+    expect(firstDay).toHaveProperty("daySeverity");
+    expect(firstDay).toHaveProperty("hasReferencePlan");
+    expect(firstDay).toHaveProperty("dataStatus");
   });
 
   it("rejects missing startDate", async () => {
