@@ -1,3 +1,4 @@
+import { derivePlanningPublicationState } from "../planning-months/planning-publication-state";
 import type {
   AvailabilityRequest,
   PlanningMonth,
@@ -97,7 +98,8 @@ export const planningComparisonService = {
         year: planningMonth.year,
         month: planningMonth.month,
         status: planningMonth.status,
-      },
+        publicationState: derivePlanningPublicationState(planningMonth.status),
+   },
       summary: buildPlanningMonthComparisonSummary(days),
       days,
     };

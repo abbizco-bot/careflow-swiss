@@ -2,10 +2,15 @@ import type {
   PlanningMonth,
   PlanningShiftTemplate,
 } from "../../generated/prisma/client";
-import type {
-  GapInterpretationSignalCode,
-  GapPrimaryCause,
-} from "../shared/gap-interpretation/gap-interpretation";
+import type { PlanningPublicationState } from "../planning-months/planning-publication-state";
+
+export interface PlanningMonthComparison {
+  planningMonth: Pick<PlanningMonth, "id" | "year" | "month" | "status"> & {
+    publicationState: PlanningPublicationState;
+  };
+  summary: PlanningMonthComparisonSummary;
+  days: PlanningComparisonDay[];
+}
 
 export type PlanningComparisonStatus =
   | "not_started"
@@ -95,7 +100,9 @@ export interface PlanningMonthComparisonSummary {
 }
 
 export interface PlanningMonthComparison {
-  planningMonth: Pick<PlanningMonth, "id" | "year" | "month" | "status">;
+  planningMonth: Pick<PlanningMonth, "id" | "year" | "month" | "status"> & {
+    publicationState: PlanningPublicationState;
+  };
   summary: PlanningMonthComparisonSummary;
   days: PlanningComparisonDay[];
 }
