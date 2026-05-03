@@ -1,12 +1,6 @@
 import { availabilityRequestsRepository } from "../availability-requests/availability-requests.repository";
-import {
-  interpretOperationalGap,
-  type GapPrimaryCause,
-} from "../shared/gap-interpretation/gap-interpretation";
-import {
-  buildShiftOperationalAvailabilityMap,
-  type ShiftOperationalAvailability,
-} from "../validations/availability/availability.service";
+import { interpretOperationalGap } from "../shared/gap-interpretation/gap-interpretation";
+import { buildShiftOperationalAvailabilityMap } from "../validations/availability/availability.service";
 import { rollingPlanningViewRepository } from "./rolling-planning-view.repository";
 import type {
   RollingPlanningView,
@@ -64,19 +58,31 @@ export const rollingPlanningViewService = {
     }
 
     const planningDayStatusByDate = new Map<string, string>();
+    const planningDayTemplateCountByDate = new Map<string, number>();
+
     for (const planningDay of planningDays) {
       const dateStr = planningDay.date.toISOString().split("T")[0];
       planningDayStatusByDate.set(dateStr, planningDay.planningMonth.status);
+      planningDayTemplateCountByDate.set(
+        dateStr,
+        planningDay.shiftTemplates.length
+      );
     }
 
     for (const [dateStr, day] of dayMap) {
       const planningMonthStatus = planningDayStatusByDate.get(dateStr);
-      if (planningMonthStatus === "draft") {
+      const planningDayTemplateCount =
+        planningDayTemplateCountByDate.get(dateStr);
+
+      if (planningDayTemplateCount === 0) {
+        day.hasReferencePlan = false;
+        day.dataStatus = "incomplete";
+      } else if (planningMonthStatus === "draft") {
         day.hasReferencePlan = false;
         day.dataStatus = "draft_plan";
       } else if (
-        planningMonthStatus === "active" ||
-        planningMonthStatus === "finalized"
+        planningMonthStatus === "published" ||
+        planningMonthStatus === "reference"
       ) {
         day.hasReferencePlan = true;
         day.dataStatus = "reference_plan";
@@ -158,8 +164,11 @@ export const rollingPlanningViewService = {
 
       const day = dayMap.get(dateStr)!;
       day.daySeverity = maxSeverity;
-      if (gaps.effectiveCoverageGapTotal! > 0 ||
-          gaps.effectiveQualificationGapTotal! > 0) {
+
+      if (
+        gaps.effectiveCoverageGapTotal! > 0 ||
+        gaps.effectiveQualificationGapTotal! > 0
+      ) {
         day.gapSummary = gaps;
       }
     }
@@ -179,7 +188,9 @@ export const rollingPlanningViewService = {
   },
 };
 
-function buildRollingPlanningSummary(days: RollingPlanningDay[]): RollingPlanningSummary {
+function buildRollingPlanningSummary(
+  days: RollingPlanningDay[]
+): RollingPlanningSummary {
   let criticalDayCount = 0;
   let attentionDayCount = 0;
 
