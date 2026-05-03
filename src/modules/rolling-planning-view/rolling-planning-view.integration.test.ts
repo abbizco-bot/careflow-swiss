@@ -105,7 +105,11 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
       date: "2026-07-01",
       hasReferencePlan: true,
       dataStatus: "reference_plan",
-    });
+      plannedShiftSummary: {
+        shiftTemplateCount: 1,
+        shiftTypes: ["early"],
+    },
+  });
     expect(response.body.days[1]).toMatchObject({
       date: "2026-07-02",
       hasReferencePlan: false,

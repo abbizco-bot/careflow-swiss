@@ -22,7 +22,10 @@ export interface RollingPlanningDay {
   hasReferencePlan?: boolean;
   dataStatus?: RollingDataStatus;
 }
-
+export interface RollingPlannedShiftSummary {
+  shiftTemplateCount: number;
+  shiftTypes: string[];
+}
 export interface RollingGapSummary {
   effectiveCoverageGapTotal?: number;
   effectiveQualificationGapTotal?: number;

@@ -61,13 +61,21 @@ export const rollingPlanningViewService = {
     const planningDayTemplateCountByDate = new Map<string, number>();
 
     for (const planningDay of planningDays) {
-      const dateStr = planningDay.date.toISOString().split("T")[0];
-      planningDayStatusByDate.set(dateStr, planningDay.planningMonth.status);
-      planningDayTemplateCountByDate.set(
-        dateStr,
-        planningDay.shiftTemplates.length
-      );
-    }
+  const dateStr = planningDay.date.toISOString().split("T")[0];
+  const shiftTypes = planningDay.shiftTemplates.map((template) => template.type);
+
+  planningDayStatusByDate.set(dateStr, planningDay.planningMonth.status);
+  planningDayTemplateCountByDate.set(dateStr, planningDay.shiftTemplates.length);
+
+  const day = dayMap.get(dateStr);
+
+  if (day && planningDay.shiftTemplates.length > 0) {
+    day.plannedShiftSummary = {
+      shiftTemplateCount: planningDay.shiftTemplates.length,
+      shiftTypes,
+    };
+  }
+}
 
     for (const [dateStr, day] of dayMap) {
       const planningMonthStatus = planningDayStatusByDate.get(dateStr);

@@ -62,6 +62,7 @@ export const rollingPlanningViewRepository = {
         shiftTemplates: {
           select: {
             id: true,
+            type: true,
           },
         },
       },
