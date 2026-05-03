@@ -69,6 +69,43 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     expect(firstDay).toHaveProperty("dataStatus");
   });
 
+  it("returns operational day summary for shifts with assignments", async () => {
+    const employee = await prisma.employee.create({
+      data: {
+        name: "Test",
+        role: "Pflege",
+        qualified: true,
+        workload: 100,
+      },
+    });
+
+    const shift = await prisma.shift.create({
+      data: {
+        date: new Date("2026-10-15T00:00:00.000Z"),
+        type: "early",
+        requiredCount: 1,
+        requiredQualifiedCount: 1,
+      },
+    });
+
+    await prisma.assignment.create({
+      data: {
+        shiftId: shift.id,
+        employeeId: employee.id,
+      },
+    });
+
+    const response = await request(app).get(
+      "/rolling-planning/window?startDate=2026-10-15&windowDays=1"
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.days[0].operationalDaySummary).toEqual({
+      shiftCount: 1,
+      assignmentCount: 1,
+    });
+  });
+  
   it("signals a reference planning day as a reference plan", async () => {
     const planningMonth = await prisma.planningMonth.create({
       data: {
