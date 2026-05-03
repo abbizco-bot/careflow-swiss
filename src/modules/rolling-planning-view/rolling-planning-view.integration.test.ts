@@ -81,8 +81,8 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
 
     const shift = await prisma.shift.create({
       data: {
-        date: new Date("2026-12-15T00:00:00.000Z"),
-        type: "early",
+        date: new Date("2027-03-19T00:00:00.000Z"),
+        type: "night",
         requiredCount: 1,
         requiredQualifiedCount: 1,
       },
@@ -96,7 +96,7 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     });
 
     const response = await request(app).get(
-      "/rolling-planning/window?startDate=2026-12-15&windowDays=1"
+      "/rolling-planning/window?startDate=2027-03-19&windowDays=1"
     );
 
     expect(response.status).toBe(200);

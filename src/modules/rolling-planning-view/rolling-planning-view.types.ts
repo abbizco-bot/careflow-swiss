@@ -30,6 +30,11 @@ export interface RollingPlanningDay {
     operationalShiftCount: number;
     missingOperationalShiftCount: number;
   };
+  qualificationGapSummary?: {
+    plannedQualifiedCount: number;
+    operationalQualifiedCount: number;
+    missingQualifiedCount: number;
+  };
 }
 
 export interface RollingPlannedShiftSummary {

@@ -192,7 +192,27 @@ export const rollingPlanningViewService = {
           ),
         };
       }
+      
+      if (day.plannedShiftSummary) {
+        const operationalQualifiedCount = shifts.reduce(
+          (sum, shift) =>
+            sum +
+            shift.assignments.filter((assignment) => assignment.employee.qualified)
+              .length,
+          0
+        );
+        const plannedQualifiedCount =
+          day.plannedShiftSummary.shiftTemplateCount;
 
+        day.qualificationGapSummary = {
+          plannedQualifiedCount,
+          operationalQualifiedCount,
+          missingQualifiedCount: Math.max(
+            0,
+            plannedQualifiedCount - operationalQualifiedCount
+          ),
+        };
+      }
       if (
         gaps.effectiveCoverageGapTotal! > 0 ||
         gaps.effectiveQualificationGapTotal! > 0
