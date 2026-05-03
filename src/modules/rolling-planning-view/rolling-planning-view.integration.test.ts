@@ -117,6 +117,55 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
     });
   });
 
+    it("returns planned shift summary for multiple shift templates", async () => {
+      const planningMonth = await prisma.planningMonth.create({
+        data: {
+          year: 2026,
+          month: 8,
+          status: "reference",
+        },
+      });
+
+    const planningDay = await prisma.planningDay.create({
+      data: {
+        planningMonthId: planningMonth.id,
+        date: new Date("2026-08-01T00:00:00.000Z"),
+      },
+    });
+
+    await prisma.planningShiftTemplate.createMany({
+      data: [
+        {
+          planningDayId: planningDay.id,
+          type: "early",
+          requiredCount: 1,
+          requiredQualifiedCount: 1,
+        },
+        {
+          planningDayId: planningDay.id,
+          type: "late",
+          requiredCount: 1,
+          requiredQualifiedCount: 1,
+        },
+      ],
+    });
+
+    testContexts.push({ planningMonthIds: [planningMonth.id] });
+
+    const response = await request(app).get(
+      "/rolling-planning/window?startDate=2026-08-01&windowDays=7"
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.days[0]).toMatchObject({
+      date: "2026-08-01",
+      plannedShiftSummary: {
+        shiftTemplateCount: 2,
+        shiftTypes: ["early", "late"],
+      },
+    });
+  });
+  
   it("signals a draft planning day with draft plan status", async () => {
     const planningMonth = await prisma.planningMonth.create({
       data: {
