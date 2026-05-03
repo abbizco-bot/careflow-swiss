@@ -172,7 +172,7 @@ export const rollingPlanningViewService = {
 
       const day = dayMap.get(dateStr)!;
       day.daySeverity = maxSeverity;
-      
+
       day.operationalDaySummary = {
         shiftCount: shifts.length,
         assignmentCount: shifts.reduce(
@@ -192,15 +192,17 @@ export const rollingPlanningViewService = {
           ),
         };
       }
-      
+
       if (day.plannedShiftSummary) {
         const operationalQualifiedCount = shifts.reduce(
           (sum, shift) =>
             sum +
-            shift.assignments.filter((assignment) => assignment.employee.qualified)
-              .length,
+            shift.assignments.filter(
+              (assignment) => assignment.employee.qualified
+            ).length,
           0
         );
+
         const plannedQualifiedCount =
           day.plannedShiftSummary.shiftTemplateCount;
 
@@ -212,6 +214,34 @@ export const rollingPlanningViewService = {
             plannedQualifiedCount - operationalQualifiedCount
           ),
         };
+      }
+
+      if (
+        day.coverageGapSummary &&
+        day.coverageGapSummary.missingOperationalShiftCount > 0
+      ) {
+        day.daySeverity = "attention";
+      }
+
+      if (
+        day.qualificationGapSummary &&
+        day.qualificationGapSummary.missingQualifiedCount > 0
+      ) {
+        day.daySeverity = "attention";
+      }
+
+      if (
+        day.coverageGapSummary &&
+        day.coverageGapSummary.missingOperationalShiftCount > 2
+      ) {
+        day.daySeverity = "critical";
+      }
+
+      if (
+        day.qualificationGapSummary &&
+        day.qualificationGapSummary.missingQualifiedCount > 2
+      ) {
+        day.daySeverity = "critical";
       }
       if (
         gaps.effectiveCoverageGapTotal! > 0 ||
