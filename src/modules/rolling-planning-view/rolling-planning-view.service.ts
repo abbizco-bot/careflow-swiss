@@ -172,6 +172,14 @@ export const rollingPlanningViewService = {
 
       const day = dayMap.get(dateStr)!;
       day.daySeverity = maxSeverity;
+      
+      day.operationalDaySummary = {
+        shiftCount: shifts.length,
+        assignmentCount: shifts.reduce(
+          (sum, shift) => sum + shift.assignments.length,
+          0
+        ),
+      };
 
       if (
         gaps.effectiveCoverageGapTotal! > 0 ||

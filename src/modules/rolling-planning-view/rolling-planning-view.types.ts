@@ -21,6 +21,11 @@ export interface RollingPlanningDay {
   openDecisionCount?: number;
   hasReferencePlan?: boolean;
   dataStatus?: RollingDataStatus;
+  plannedShiftSummary?: RollingPlannedShiftSummary;
+  operationalDaySummary?: {
+    shiftCount: number;
+    assignmentCount: number;
+  };
 }
 export interface RollingPlannedShiftSummary {
   shiftTemplateCount: number;
