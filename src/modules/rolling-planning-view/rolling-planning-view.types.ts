@@ -12,7 +12,6 @@ export interface RollingPlanningView {
   days: RollingPlanningDay[];
   summary?: RollingPlanningSummary;
 }
-
 export interface RollingPlanningDay {
   date: string;
   daySeverity: RollingDaySeverity;
@@ -26,7 +25,13 @@ export interface RollingPlanningDay {
     shiftCount: number;
     assignmentCount: number;
   };
+  coverageGapSummary?: {
+    plannedShiftCount: number;
+    operationalShiftCount: number;
+    missingOperationalShiftCount: number;
+  };
 }
+
 export interface RollingPlannedShiftSummary {
   shiftTemplateCount: number;
   shiftTypes: string[];

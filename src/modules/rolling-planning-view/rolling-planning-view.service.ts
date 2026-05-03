@@ -181,6 +181,18 @@ export const rollingPlanningViewService = {
         ),
       };
 
+      if (day.plannedShiftSummary) {
+        day.coverageGapSummary = {
+          plannedShiftCount: day.plannedShiftSummary.shiftTemplateCount,
+          operationalShiftCount: day.operationalDaySummary.shiftCount,
+          missingOperationalShiftCount: Math.max(
+            0,
+            day.plannedShiftSummary.shiftTemplateCount -
+              day.operationalDaySummary.shiftCount
+          ),
+        };
+      }
+
       if (
         gaps.effectiveCoverageGapTotal! > 0 ||
         gaps.effectiveQualificationGapTotal! > 0
