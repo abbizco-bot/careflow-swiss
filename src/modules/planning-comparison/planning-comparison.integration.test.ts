@@ -266,6 +266,8 @@ describe("Planning comparison read-only integration", () => {
       month: 11,
       status: "draft",
     });
+
+    expect(response.body.planningMonth.publicationState).toBe("working_draft");    
     expect(response.body.summary).toEqual({
       daysTotal: 4,
       daysAligned: 1,
