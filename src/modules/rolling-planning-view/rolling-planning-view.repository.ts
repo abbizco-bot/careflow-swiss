@@ -59,6 +59,11 @@ export const rollingPlanningViewRepository = {
             status: true,
           },
         },
+        shiftTemplates: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: [
         {
