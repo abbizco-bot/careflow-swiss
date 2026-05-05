@@ -1,0 +1,229 @@
+﻿import { useEffect, useState } from "react";
+import logo from "./assets/careflow-signet.png";
+
+type Day = {
+  date: string;
+  daySeverity?: string;
+  hasReferencePlan?: boolean;
+  dataStatus?: string;
+};
+
+function leadershipSentence(daySeverity?: string) {
+  if (daySeverity === "critical") return "Kritische Unterdeckung erkennbar";
+  if (daySeverity === "attention")
+    return "Einzelne Dienste benötigen Aufmerksamkeit";
+  return "Stabiler Betrieb erwartet";
+}
+
+function App() {
+  const [days, setDays] = useState<Day[]>([]);
+
+  const stableDays = days.filter(
+    (day) => !day.daySeverity || day.daySeverity === "stable"
+  ).length;
+
+  const attentionDays = days.filter(
+    (day) => day.daySeverity === "attention"
+  ).length;
+
+  const criticalDays = days.filter(
+    (day) => day.daySeverity === "critical"
+  ).length;
+
+  const startDate = days[0]?.date;
+  const endDate = days[days.length - 1]?.date;
+
+  const formattedStartDate = startDate
+    ? new Date(startDate).toLocaleDateString("de-CH")
+    : "";
+
+  const formattedEndDate = endDate
+    ? new Date(endDate).toLocaleDateString("de-CH")
+    : "";
+
+  useEffect(() => {
+    async function load() {
+      const today = new Date().toISOString().slice(0, 10);
+
+      const res = await fetch(
+        "http://localhost:3001/rolling-planning/window?startDate=" +
+          today +
+          "&windowDays=28"
+      );
+
+      const data = await res.json();
+      setDays(data.days || []);
+    }
+
+    load();
+  }, []);
+
+  return (
+    <main
+      style={{
+        maxWidth: 980,
+        margin: "48px auto",
+        fontFamily: "Arial",
+        color: "#1f2a24",
+        padding: "0 24px",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          marginBottom: 40,
+        }}
+      >
+        <img
+          src={logo}
+          alt="CareFlow-Swiss"
+          style={{
+            width: 64,
+            height: 64,
+            objectFit: "contain",
+            marginBottom: 10,
+          }}
+        />
+
+        <div
+          style={{
+            fontSize: 13,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "#66736b",
+            marginBottom: 6,
+          }}
+        >
+          CareFlow-Swiss
+        </div>
+
+        <h1 style={{ fontSize: 30, margin: 0 }}>Rolling Leadership View</h1>
+      </header>
+
+      <section style={{ marginBottom: 28, textAlign: "center" }}>
+        <p
+          style={{
+            maxWidth: 760,
+            margin: "0 auto",
+            lineHeight: 1.55,
+            color: "#526158",
+          }}
+        >
+          Eine ruhige Führungsansicht für die nächsten 28 Tage. CareFlow zeigt
+          keine Dienstplanung, sondern macht operative Lage und
+          Führungsaufmerksamkeit sichtbar.
+        </p>
+      </section>
+
+      <section
+        style={{
+          background: "#f7f9f7",
+          border: "1px solid #e1e8e2",
+          padding: 24,
+          marginBottom: 28,
+          borderRadius: 16,
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "#66736b",
+            marginBottom: 10,
+          }}
+        >
+          Zeitraum
+        </div>
+
+        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
+          {days.length > 0
+            ? `${formattedStartDate} – ${formattedEndDate}`
+            : "Lade Zeitraum..."}
+        </div>
+
+        <div style={{ lineHeight: 1.7, color: "#36443c" }}>
+          <strong>In den nächsten {days.length || 28} Tagen:</strong>
+          <br />
+          {stableDays} Tage stabil
+          <br />
+          {attentionDays} Tage mit erhöhter Aufmerksamkeit
+          <br />
+          {criticalDays} Tage mit kritischer Lage
+        </div>
+      </section>
+
+      <section
+        style={{
+          background: "#f3f6f4",
+          border: "1px solid #e1e8e2",
+          padding: 28,
+          marginBottom: 36,
+          borderRadius: 18,
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "#66736b",
+            marginBottom: 10,
+          }}
+        >
+          Heute ·{" "}
+          {days[0] ? new Date(days[0].date).toLocaleDateString("de-CH") : ""}
+        </div>
+
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 600,
+            marginBottom: 6,
+          }}
+        >
+          {days[0] ? leadershipSentence(days[0].daySeverity) : "Lade Daten..."}
+        </div>
+
+        <div style={{ fontSize: 14, color: "#66736b" }}>
+          {days[0]?.hasReferencePlan
+            ? "Referenzplanung vorhanden"
+            : "Keine Referenzplanung hinterlegt"}
+        </div>
+      </section>
+
+      <section>
+        {days.slice(0, 7).map((day, index) => (
+          <div
+            key={day.date}
+            style={{
+              padding: "16px 0",
+              borderBottom: "1px solid #e2e8e2",
+              textAlign: "center",
+            }}
+          >
+            <strong>
+              {index === 0 ? "Heute · " : index === 1 ? "Morgen · " : ""}
+              {new Date(day.date).toLocaleDateString("de-CH")}
+            </strong>
+
+            <div>{leadershipSentence(day.daySeverity)}</div>
+
+            <small style={{ color: "#66736b" }}>
+              {day.hasReferencePlan
+                ? "Referenzplanung vorhanden"
+                : "Keine Referenzplanung hinterlegt"}
+            </small>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}
+
+export default App;
