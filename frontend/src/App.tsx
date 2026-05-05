@@ -196,9 +196,9 @@ function App() {
         </div>
 
         <div style={{ fontSize: 14, color: "#66736b" }}>
-          {days[0]?.hasReferencePlan
-            ? "Referenzplanung vorhanden"
-            : "Keine Referenzplanung hinterlegt"}
+         {days[0]?.hasReferencePlan
+           ? "Planungsgrundlage vorhanden"
+           : "Keine Planungsgrundlage hinterlegt"}
         </div>
       </section>
 
@@ -238,8 +238,8 @@ function App() {
 
             <div style={{ fontSize: 13, color: "#66736b" }}>
               {day.hasReferencePlan
-                ? "Referenzplanung vorhanden"
-                : "Keine Referenzplanung hinterlegt"}
+                ? "Planungsgrundlage vorhanden"
+                : "Ohne Planungsgrundlage"}
             </div>
           </div>
         ))}
