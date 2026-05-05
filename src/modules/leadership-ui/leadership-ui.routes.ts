@@ -54,9 +54,6 @@ router.get("/leadership", (_req, res) => {
     }
 
     .panel-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
       border-bottom: 1px solid #e7ece7;
       padding-bottom: 18px;
       margin-bottom: 18px;
@@ -70,19 +67,16 @@ router.get("/leadership", (_req, res) => {
     .range {
       font-size: 15px;
       color: #637067;
+      margin-top: 4px;
     }
 
     .day-row {
       display: grid;
-      grid-template-columns: 140px 1fr 160px;
+      grid-template-columns: 180px 1fr 140px;
       gap: 20px;
       align-items: center;
       padding: 16px 0;
       border-bottom: 1px solid #edf1ed;
-    }
-
-    .day-row:last-child {
-      border-bottom: none;
     }
 
     .date {
@@ -131,10 +125,8 @@ router.get("/leadership", (_req, res) => {
 
     <section class="panel">
       <div class="panel-header">
-        <div>
-          <div class="panel-title">Personelle Lage – nächster Planungshorizont</div>
-          <div class="range">Echte Daten · 28 Tage · read-only</div>
-        </div>
+        <div class="panel-title">Personelle Lage – nächster Planungshorizont</div>
+        <div class="range">Echte Daten · 28 Tage · read-only</div>
       </div>
 
       <div id="days"></div>
@@ -154,7 +146,14 @@ router.get("/leadership", (_req, res) => {
 
       const container = document.getElementById("days");
 
-      container.innerHTML = data.days.map(function(day) {
+      container.innerHTML = data.days.map(function(day, index) {
+        const d = new Date(day.date);
+        const formatted = d.toLocaleDateString("de-CH");
+
+        let labelDate = formatted;
+        if (index === 0) labelDate = "Heute · " + formatted;
+        if (index === 1) labelDate = "Morgen · " + formatted;
+
         const status = day.severity || "stable";
 
         let cssClass = "status";
@@ -175,7 +174,7 @@ router.get("/leadership", (_req, res) => {
 
         return ''
           + '<div class="day-row">'
-          + '<div class="date">' + day.date + '</div>'
+          + '<div class="date">' + labelDate + '</div>'
           + '<div class="statement">' + statement + '</div>'
           + '<div class="' + cssClass + '">' + label + '</div>'
           + '</div>';
