@@ -14,6 +14,11 @@ function leadershipSentence(daySeverity?: string) {
     return "Einzelne Dienste benötigen Aufmerksamkeit";
   return "Stabiler Betrieb erwartet";
 }
+function dayBackground(daySeverity?: string) {
+  if (daySeverity === "critical") return "#f3eaea";
+  if (daySeverity === "attention") return "#f5f7f6";
+  return "#ffffff";
+}
 
 function App() {
   const [days, setDays] = useState<Day[]>([]);
@@ -197,28 +202,45 @@ function App() {
         </div>
       </section>
 
-      <section>
+      <section style={{ marginBottom: 40 }}>
         {days.slice(0, 7).map((day, index) => (
           <div
             key={day.date}
             style={{
-              padding: "16px 0",
-              borderBottom: "1px solid #e2e8e2",
-              textAlign: "center",
+              background: dayBackground(day.daySeverity),
+              padding: "18px 22px",
+              marginBottom: 10,
+              border: "1px solid #e2e8e2",
+              borderRadius: 14,
+              textAlign: "left",
             }}
           >
-            <strong>
-              {index === 0 ? "Heute · " : index === 1 ? "Morgen · " : ""}
+            <div
+              style={{
+                fontSize: 13,
+                color: "#66736b",
+                marginBottom: 6,
+              }}
+            >
+              {index === 0 ? "Heute" : index === 1 ? "Morgen" : "Folgetag"} ·{" "}
               {new Date(day.date).toLocaleDateString("de-CH")}
-            </strong>
+            </div>
 
-            <div>{leadershipSentence(day.daySeverity)}</div>
+            <div
+              style={{
+                fontSize: 17,
+                fontWeight: 600,
+                marginBottom: 4,
+              }}
+            >
+              {leadershipSentence(day.daySeverity)}
+            </div>
 
-            <small style={{ color: "#66736b" }}>
+            <div style={{ fontSize: 13, color: "#66736b" }}>
               {day.hasReferencePlan
                 ? "Referenzplanung vorhanden"
                 : "Keine Referenzplanung hinterlegt"}
-            </small>
+            </div>
           </div>
         ))}
       </section>
