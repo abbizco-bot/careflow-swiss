@@ -87,6 +87,12 @@ router.get("/leadership", (_req, res) => {
       color: #415047;
     }
 
+    .context {
+      font-size: 13px;
+      color: #6b766e;
+      margin-top: 4px;
+    }
+
     .status {
       justify-self: end;
       border-radius: 999px;
@@ -159,23 +165,29 @@ router.get("/leadership", (_req, res) => {
         let cssClass = "status";
         let label = "stabil";
         let statement = "Die Lage ist stabil.";
+        let context = "Referenzplan vorhanden · operative Lage lesbar";
 
         if (status === "attention" || status === "warning") {
           cssClass += " attention";
           label = "angespannt";
           statement = "Die Lage ist angespannt. Aufmerksamkeit erforderlich.";
+          context = "Abweichungen sichtbar · einzelne Schichten betroffen";
         }
 
         if (status === "critical") {
           cssClass += " critical";
           label = "kritisch";
           statement = "Die Lage ist kritisch. Unterdeckung oder Qualifikationslücke sichtbar.";
+          context = "Unterdeckung oder Qualifikationslücke · Führungsintervention erforderlich";
         }
 
         return ''
           + '<div class="day-row">'
           + '<div class="date">' + labelDate + '</div>'
+          + '<div>'
           + '<div class="statement">' + statement + '</div>'
+          + '<div class="context">' + context + '</div>'
+          + '</div>'
           + '<div class="' + cssClass + '">' + label + '</div>'
           + '</div>';
       }).join("");
