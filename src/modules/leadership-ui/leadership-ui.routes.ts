@@ -70,6 +70,33 @@ router.get("/leadership", (_req, res) => {
       margin-top: 4px;
     }
 
+    .headline {
+      background: #f0f4f1;
+      border: 1px solid #d9e2db;
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+
+    .headline-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b766e;
+      margin-bottom: 6px;
+    }
+
+    .headline-main {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .headline-sub {
+      font-size: 14px;
+      color: #4a574f;
+    }
+
     .day-row {
       display: grid;
       grid-template-columns: 180px 1fr 140px;
@@ -135,6 +162,7 @@ router.get("/leadership", (_req, res) => {
         <div class="range">Echte Daten · 28 Tage · read-only</div>
       </div>
 
+      <div id="headline"></div>
       <div id="days"></div>
 
       <p class="note">
@@ -146,11 +174,35 @@ router.get("/leadership", (_req, res) => {
 
   <script>
     async function loadData() {
-      const today = new Date().toISOString().slice(0, 10);
-      const res = await fetch('/rolling-planning/window?startDate=' + today + '&windowDays=28');
+      const startDate = new Date().toISOString().slice(0, 10);
+      const res = await fetch('/rolling-planning/window?startDate=' + startDate + '&windowDays=28');
       const data = await res.json();
 
+      const headlineContainer = document.getElementById("headline");
       const container = document.getElementById("days");
+
+      const today = data.days[0];
+      const headlineStatus = today?.severity || "stable";
+
+      let main = "Die Lage ist stabil.";
+      let sub = "Keine unmittelbare Führungsintervention erforderlich.";
+
+      if (headlineStatus === "attention" || headlineStatus === "warning") {
+        main = "Die Lage ist angespannt.";
+        sub = "Einzelne Schichten benötigen Aufmerksamkeit.";
+      }
+
+      if (headlineStatus === "critical") {
+        main = "Die Lage ist kritisch.";
+        sub = "Unterdeckung oder Qualifikationslücke erfordert Intervention.";
+      }
+
+      headlineContainer.innerHTML = ''
+        + '<div class="headline">'
+        + '<div class="headline-title">Lage heute</div>'
+        + '<div class="headline-main">' + main + '</div>'
+        + '<div class="headline-sub">' + sub + '</div>'
+        + '</div>';
 
       container.innerHTML = data.days.map(function(day, index) {
         const d = new Date(day.date);
