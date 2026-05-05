@@ -14,6 +14,18 @@ function leadershipSentence(daySeverity?: string) {
     return "Einzelne Dienste benötigen Aufmerksamkeit";
   return "Stabiler Betrieb erwartet";
 }
+
+function todayFocusSentence(daySeverity?: string) {
+  if (daySeverity === "critical") return "Heutige Lage: kritisch";
+  if (daySeverity === "attention") return "Heutige Lage: angespannt";
+  return "Heutige Lage: stabil";
+}
+
+function todayFocusDetail(daySeverity?: string) {
+  if (daySeverity === "critical") return "Führungsentscheid erforderlich.";
+  if (daySeverity === "attention") return "Einzelne Dienste sollten geprüft werden.";
+  return "Aktuell besteht kein unmittelbarer Führungsbedarf.";
+}
 function dayBackground(daySeverity?: string) {
   if (daySeverity === "critical") return "#f3eaea";
   if (daySeverity === "attention") return "#f5f7f6";
@@ -184,21 +196,24 @@ function App() {
           Heute ·{" "}
           {days[0] ? new Date(days[0].date).toLocaleDateString("de-CH") : ""}
         </div>
-
         <div
           style={{
-            fontSize: 22,
+            fontSize: 26,
             fontWeight: 600,
-            marginBottom: 6,
+            marginBottom: 10,
           }}
         >
-          {days[0] ? leadershipSentence(days[0].daySeverity) : "Lade Daten..."}
+          {days[0] ? todayFocusSentence(days[0].daySeverity) : "Lade Daten..."}
         </div>
 
-        <div style={{ fontSize: 14, color: "#66736b" }}>
-         {days[0]?.hasReferencePlan
-           ? "Planungsgrundlage vorhanden"
-           : "Keine Planungsgrundlage hinterlegt"}
+        <div style={{ fontSize: 15, color: "#5f6f65", marginBottom: 8 }}>
+          {days[0] ? todayFocusDetail(days[0].daySeverity) : ""}
+        </div>
+
+        <div style={{ fontSize: 13, color: "#6f7b72" }}>
+          {days[0]?.hasReferencePlan
+            ? "Planungsgrundlage vorhanden"
+            : "Keine Planungsgrundlage hinterlegt"}
         </div>
       </section>
 
