@@ -217,6 +217,15 @@ function App() {
         </div>
       </section>
 
+      <section style={{ marginBottom: 18 }}>
+        <h2 style={{ fontSize: 20, marginBottom: 6 }}>
+          Nächste Tage
+        </h2>
+        <p style={{ color: "#66736b", margin: 0 }}>
+          Übersicht der kurzfristigen Führungslage.
+        </p>
+      </section>
+
       <section style={{ marginBottom: 40 }}>
         {days.slice(0, 7).map((day, index) => (
           <div
