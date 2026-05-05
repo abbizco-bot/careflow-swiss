@@ -79,7 +79,21 @@ describe("Rolling Planning View API Integration Smoke Test", () => {
       },
     });
 
-    const shift = await prisma.shift.create({
+  await prisma.assignment.deleteMany({
+    where: {
+      shift: {
+        date: new Date("2040-01-15T00:00:00.000Z"),
+      },
+    },
+  });
+
+  await prisma.shift.deleteMany({
+    where: {
+      date: new Date("2040-01-15T00:00:00.000Z"),
+    },
+  });
+    
+  const shift = await prisma.shift.create({
       data: {
         date: new Date("2040-01-15T00:00:00.000Z"),
         type: "night",
