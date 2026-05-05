@@ -97,6 +97,15 @@ router.get("/leadership", (_req, res) => {
       color: #4a574f;
     }
 
+    .section-divider {
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #7a867f;
+    }
+
     .day-row {
       display: grid;
       grid-template-columns: 180px 1fr 140px;
@@ -163,7 +172,10 @@ router.get("/leadership", (_req, res) => {
       </div>
 
       <div id="headline"></div>
-      <div id="days"></div>
+      <div id="days-main"></div>
+
+      <div class="section-divider">Weiterer Planungshorizont</div>
+      <div id="days-rest"></div>
 
       <p class="note">
         Diese Oberfläche ist read-only. Sie zeigt die personelle Lage aus der bestehenden
@@ -179,7 +191,8 @@ router.get("/leadership", (_req, res) => {
       const data = await res.json();
 
       const headlineContainer = document.getElementById("headline");
-      const container = document.getElementById("days");
+      const mainContainer = document.getElementById("days-main");
+      const restContainer = document.getElementById("days-rest");
 
       const today = data.days[0];
       const headlineStatus = today?.severity || "stable";
@@ -197,14 +210,14 @@ router.get("/leadership", (_req, res) => {
         sub = "Unterdeckung oder Qualifikationslücke erfordert Intervention.";
       }
 
-      headlineContainer.innerHTML = ''
-        + '<div class="headline">'
-        + '<div class="headline-title">Lage heute</div>'
-        + '<div class="headline-main">' + main + '</div>'
-        + '<div class="headline-sub">' + sub + '</div>'
-        + '</div>';
+      headlineContainer.innerHTML =
+        '<div class="headline">' +
+        '<div class="headline-title">Lage heute</div>' +
+        '<div class="headline-main">' + main + '</div>' +
+        '<div class="headline-sub">' + sub + '</div>' +
+        '</div>';
 
-      container.innerHTML = data.days.map(function(day, index) {
+      function renderRow(day, index) {
         const d = new Date(day.date);
         const formatted = d.toLocaleDateString("de-CH");
 
@@ -233,15 +246,27 @@ router.get("/leadership", (_req, res) => {
           context = "Unterdeckung oder Qualifikationslücke · Führungsintervention erforderlich";
         }
 
-        return ''
-          + '<div class="day-row">'
-          + '<div class="date">' + labelDate + '</div>'
-          + '<div>'
-          + '<div class="statement">' + statement + '</div>'
-          + '<div class="context">' + context + '</div>'
-          + '</div>'
-          + '<div class="' + cssClass + '">' + label + '</div>'
-          + '</div>';
+        return (
+          '<div class="day-row">' +
+          '<div class="date">' + labelDate + '</div>' +
+          '<div>' +
+          '<div class="statement">' + statement + '</div>' +
+          '<div class="context">' + context + '</div>' +
+          '</div>' +
+          '<div class="' + cssClass + '">' + label + '</div>' +
+          '</div>'
+        );
+      }
+
+      const mainDays = data.days.slice(0, 7);
+      const restDays = data.days.slice(7);
+
+      mainContainer.innerHTML = mainDays.map(function(day, index) {
+        return renderRow(day, index);
+      }).join("");
+
+      restContainer.innerHTML = restDays.map(function(day, index) {
+        return renderRow(day, index + 7);
       }).join("");
     }
 
