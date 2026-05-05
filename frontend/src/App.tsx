@@ -1,5 +1,12 @@
 ﻿import { useEffect, useState } from "react";
 import logo from "./assets/careflow-signet.png";
+import {
+  currentLanguage,
+  rollingLeadershipCopy,
+  type Severity,
+} from "./rollingLeadership.copy";
+
+const copy = rollingLeadershipCopy[currentLanguage];
 
 type Day = {
   date: string;
@@ -8,24 +15,12 @@ type Day = {
   dataStatus?: string;
 };
 
-function leadershipSentence(daySeverity?: string) {
-  if (daySeverity === "critical") return "Kritische Unterdeckung erkennbar";
-  if (daySeverity === "attention")
-    return "Einzelne Dienste benötigen Aufmerksamkeit";
-  return "Stabiler Betrieb erwartet";
+function normalizeSeverity(daySeverity?: string): Severity {
+  if (daySeverity === "critical") return "critical";
+  if (daySeverity === "attention") return "attention";
+  return "stable";
 }
 
-function todayFocusSentence(daySeverity?: string) {
-  if (daySeverity === "critical") return "Heutige Lage: kritisch";
-  if (daySeverity === "attention") return "Heutige Lage: angespannt";
-  return "Heutige Lage: stabil";
-}
-
-function todayFocusDetail(daySeverity?: string) {
-  if (daySeverity === "critical") return "Führungsentscheid erforderlich.";
-  if (daySeverity === "attention") return "Einzelne Dienste sollten geprüft werden.";
-  return "Aktuell besteht kein unmittelbarer Führungsbedarf.";
-}
 function dayBackground(daySeverity?: string) {
   if (daySeverity === "critical") return "#f3eaea";
   if (daySeverity === "attention") return "#f5f7f6";
@@ -36,15 +31,15 @@ function App() {
   const [days, setDays] = useState<Day[]>([]);
 
   const stableDays = days.filter(
-    (day) => !day.daySeverity || day.daySeverity === "stable"
+    (day) => normalizeSeverity(day.daySeverity) === "stable"
   ).length;
 
   const attentionDays = days.filter(
-    (day) => day.daySeverity === "attention"
+    (day) => normalizeSeverity(day.daySeverity) === "attention"
   ).length;
 
   const criticalDays = days.filter(
-    (day) => day.daySeverity === "critical"
+    (day) => normalizeSeverity(day.daySeverity) === "critical"
   ).length;
 
   const startDate = days[0]?.date;
@@ -117,7 +112,7 @@ function App() {
           CareFlow-Swiss
         </div>
 
-        <h1 style={{ fontSize: 30, margin: 0 }}>Rolling Leadership View</h1>
+        <h1 style={{ fontSize: 30, margin: 0 }}>{copy.appTitle}</h1>
       </header>
 
       <section style={{ marginBottom: 28, textAlign: "center" }}>
@@ -129,9 +124,7 @@ function App() {
             color: "#526158",
           }}
         >
-          Eine ruhige Führungsansicht für die nächsten 28 Tage. CareFlow zeigt
-          keine Dienstplanung, sondern macht operative Lage und
-          Führungsaufmerksamkeit sichtbar.
+          {copy.appSubtitle}
         </p>
       </section>
 
@@ -154,7 +147,7 @@ function App() {
             marginBottom: 10,
           }}
         >
-          Zeitraum
+          {copy.periodLabel}
         </div>
 
         <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
@@ -164,38 +157,42 @@ function App() {
         </div>
 
         <div style={{ lineHeight: 1.7, color: "#36443c" }}>
-          <strong>In den nächsten {days.length || 28} Tagen:</strong>
+          <strong>
+            {copy.periodIntro} {days.length || 28} Tagen:
+          </strong>
           <br />
-          {stableDays} Tage stabil
+          {stableDays} {copy.stableDays}
           <br />
-          {attentionDays} Tage mit erhöhter Aufmerksamkeit
+          {attentionDays} {copy.attentionDays}
           <br />
-          {criticalDays} Tage mit kritischer Lage
+          {criticalDays} {copy.criticalDays}
         </div>
       </section>
 
       <section
         style={{
-          background: "#f3f6f4",
-          border: "1px solid #e1e8e2",
-          padding: 28,
-          marginBottom: 36,
-          borderRadius: 18,
+          background: "#eef3ef",
+          border: "1px solid #d8e2da",
+          padding: 36,
+          marginBottom: 42,
+          borderRadius: 20,
           textAlign: "center",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
         }}
       >
         <div
           style={{
             fontSize: 12,
             textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "#66736b",
-            marginBottom: 10,
+            letterSpacing: "0.1em",
+            color: "#5f6f65",
+            marginBottom: 12,
           }}
         >
-          Heute ·{" "}
+          {copy.today} ·{" "}
           {days[0] ? new Date(days[0].date).toLocaleDateString("de-CH") : ""}
         </div>
+
         <div
           style={{
             fontSize: 26,
@@ -203,26 +200,28 @@ function App() {
             marginBottom: 10,
           }}
         >
-          {days[0] ? todayFocusSentence(days[0].daySeverity) : "Lade Daten..."}
+          {days[0]
+            ? copy.todayFocus[normalizeSeverity(days[0].daySeverity)].title
+            : "Lade Daten..."}
         </div>
 
         <div style={{ fontSize: 15, color: "#5f6f65", marginBottom: 8 }}>
-          {days[0] ? todayFocusDetail(days[0].daySeverity) : ""}
+          {days[0]
+            ? copy.todayFocus[normalizeSeverity(days[0].daySeverity)].detail
+            : ""}
         </div>
 
         <div style={{ fontSize: 13, color: "#6f7b72" }}>
           {days[0]?.hasReferencePlan
-            ? "Planungsgrundlage vorhanden"
-            : "Keine Planungsgrundlage hinterlegt"}
+            ? copy.planningBaseAvailable
+            : copy.planningBaseMissing}
         </div>
       </section>
 
       <section style={{ marginBottom: 18 }}>
-        <h2 style={{ fontSize: 20, marginBottom: 6 }}>
-          Nächste Tage
-        </h2>
+        <h2 style={{ fontSize: 20, marginBottom: 6 }}>{copy.nextDaysTitle}</h2>
         <p style={{ color: "#66736b", margin: 0 }}>
-          Übersicht der kurzfristigen Führungslage.
+          {copy.nextDaysSubtitle}
         </p>
       </section>
 
@@ -246,8 +245,12 @@ function App() {
                 marginBottom: 6,
               }}
             >
-              {index === 0 ? "Heute" : index === 1 ? "Morgen" : "Folgetag"} ·{" "}
-              {new Date(day.date).toLocaleDateString("de-CH")}
+              {index === 0
+                ? copy.today
+                : index === 1
+                  ? copy.tomorrow
+                  : copy.followingDay}{" "}
+              · {new Date(day.date).toLocaleDateString("de-CH")}
             </div>
 
             <div
@@ -257,13 +260,13 @@ function App() {
                 marginBottom: 4,
               }}
             >
-              {leadershipSentence(day.daySeverity)}
+              {copy.daySentence[normalizeSeverity(day.daySeverity)]}
             </div>
 
             <div style={{ fontSize: 13, color: "#66736b" }}>
               {day.hasReferencePlan
-                ? "Planungsgrundlage vorhanden"
-                : "Ohne Planungsgrundlage"}
+                ? copy.planningBaseAvailable
+                : copy.planningBaseMissingShort}
             </div>
           </div>
         ))}
