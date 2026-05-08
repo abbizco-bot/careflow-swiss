@@ -26,15 +26,11 @@ function normalizeSeverity(daySeverity?: string): Severity {
   return "stable";
 }
 
-function dayBackground(daySeverity?: string) {
-  if (daySeverity === "critical") return "#f3eaea";
-  if (daySeverity === "attention") return "#f5f7f6";
-  return "#ffffff";
+function severityColor(severity: Severity) {
+  if (severity === "critical") return "#d92d20";
+  if (severity === "attention") return "#d9a404";
+  return "#1f8f4e";
 }
-
-// DEMO ONLY:
-// This function overrides backend data to simulate leadership scenarios
-// for pilot presentations. Not part of production logic.
 
 function applyDemoScenarioToDays(
   days: Day[],
@@ -50,13 +46,17 @@ function applyDemoScenarioToDays(
     }
 
     if (scenario.key === "mixed") {
-      newDay.daySeverity = index === 3 ? "attention" : "stable";
+      if (index >= 4 && index <= 8) {
+        newDay.daySeverity = "attention";
+      } else {
+        newDay.daySeverity = "stable";
+      }
     }
 
     if (scenario.key === "critical") {
-      if (index === 0) {
+      if (index === 9) {
         newDay.daySeverity = "critical";
-      } else if (index === 2) {
+      } else if (index >= 4 && index <= 8) {
         newDay.daySeverity = "attention";
       } else {
         newDay.daySeverity = "stable";
@@ -146,8 +146,6 @@ function App() {
       const data = await res.json();
       const baseDays = data.days || [];
 
-      // DEMO ONLY: apply visual scenario overlay
-
       const demoDays = applyDemoScenarioToDays(baseDays, selectedScenario);
 
       setDays(demoDays);
@@ -163,7 +161,7 @@ function App() {
         margin: "72px auto",
         fontFamily: "Arial",
         color: "#1f2a24",
-        padding: "0 24px",
+        padding: "0 32px",
       }}
     >
       <header
@@ -172,17 +170,17 @@ function App() {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          marginBottom: 40,
+          marginBottom: 50,
         }}
       >
         <img
           src={logo}
           alt="CareFlow-Swiss"
           style={{
-            width: 64,
-            height: 64,
+            width: 70,
+            height: 70,
             objectFit: "contain",
-            marginBottom: 10,
+            marginBottom: 12,
           }}
         />
 
@@ -192,38 +190,36 @@ function App() {
             textTransform: "uppercase",
             letterSpacing: "0.08em",
             color: "#66736b",
-            marginBottom: 6,
+            marginBottom: 10,
           }}
         >
           CareFlow-Swiss
         </div>
 
-      <h1 style={{ fontSize: 42, margin: 0, fontWeight: 600 }}>
-        {copy.appTitle}
-      </h1>
+        <h1 style={{ fontSize: 42, margin: 0, fontWeight: 600 }}>
+          {copy.appTitle}
+        </h1>
 
-      </header>
-
-      <section style={{ marginBottom: 28, textAlign: "center" }}>
         <p
           style={{
-            maxWidth: 760,
-            margin: "0 auto",
+            maxWidth: 920,
+            marginTop: 26,
             lineHeight: 1.8,
             color: "#4f5d55",
+            fontSize: 18,
           }}
         >
           {copy.appSubtitle}
         </p>
-      </section>
+      </header>
 
       <section
         style={{
           background: "#f7f9f7",
           border: "1px solid #e1e8e2",
-          padding: 36,
-          marginBottom: 28,
-          borderRadius: 16,
+          padding: 40,
+          marginBottom: 34,
+          borderRadius: 20,
           textAlign: "center",
         }}
       >
@@ -233,35 +229,86 @@ function App() {
             textTransform: "uppercase",
             letterSpacing: "0.08em",
             color: "#66736b",
-            marginBottom: 10,
+            marginBottom: 14,
           }}
         >
-          {copy.periodLabel}
+          Führungslage – nächste 28 Tage
         </div>
 
-        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
+        <div
+          style={{
+            fontSize: 20,
+            fontWeight: 600,
+            marginBottom: 28,
+          }}
+        >
           {formattedStartDate} – {formattedEndDate}
         </div>
 
-        <div style={{ lineHeight: 1.7, color: "#36443c" }}>
-          <strong>
-            {copy.periodIntro} {visibleDays.length} Tagen:
-          </strong>
-          <br />
-          {stableDays} {copy.stableDays}
-          <br />
-          {attentionDays} {copy.attentionDays}
-          <br />
-          {criticalDays} {copy.criticalDays}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 28,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 44,
+                fontWeight: 700,
+                color: "#1f8f4e",
+              }}
+            >
+              {stableDays}
+            </div>
+
+            <div style={{ color: "#4f5d55" }}>
+              Tage mit stabiler Lage
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontSize: 44,
+                fontWeight: 700,
+                color: "#d9a404",
+              }}
+            >
+              {attentionDays}
+            </div>
+
+            <div style={{ color: "#4f5d55" }}>
+              Tage mit erhöhter Aufmerksamkeit
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontSize: 44,
+                fontWeight: 700,
+                color: "#d92d20",
+              }}
+            >
+              {criticalDays}
+            </div>
+
+            <div style={{ color: "#4f5d55" }}>
+              Kritische Tage
+            </div>
+          </div>
         </div>
       </section>
 
       <section
         style={{
-          marginBottom: 28,
+          marginBottom: 34,
           display: "flex",
           justifyContent: "center",
-          gap: 8,
+          gap: 14,
           flexWrap: "wrap",
         }}
       >
@@ -274,14 +321,15 @@ function App() {
               type="button"
               onClick={() => setSelectedScenarioKey(scenario.key)}
               style={{
-                padding: "8px 14px",
+                padding: "14px 22px",
                 borderRadius: 999,
                 border: isSelected
                   ? "1px solid #617468"
                   : "1px solid #d6ded8",
                 background: isSelected ? "#eef3ef" : "#ffffff",
                 color: "#2f3b34",
-                fontSize: 13,
+                fontSize: 15,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -294,15 +342,16 @@ function App() {
       {selectedScenario && (
         <div
           style={{
-            marginBottom: 20,
+            marginBottom: 30,
             textAlign: "center",
             color: "#5f6f65",
-            fontSize: 14,
+            fontSize: 16,
           }}
         >
-          <div style={{ fontWeight: 500, marginBottom: 4 }}>
+          <div style={{ fontWeight: 600, marginBottom: 8 }}>
             {selectedScenario.title}
           </div>
+
           <div>{selectedScenario.description}</div>
         </div>
       )}
@@ -313,26 +362,32 @@ function App() {
           border: "1px solid #d8e2da",
           padding: 56,
           marginBottom: 42,
-          borderRadius: 20,
+          borderRadius: 24,
           textAlign: "center",
           boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
         }}
       >
-        <div style={{ fontSize: 14, marginBottom: 6, color: "#6b7a70" }}>
+        <div style={{ fontSize: 16, marginBottom: 10, color: "#6b7a70" }}>
           {selectedScenario?.label}
         </div>
 
-        <div style={{ fontSize: 52, fontWeight: 600, marginBottom: 12 }}>
+        <div
+          style={{
+            fontSize: 52,
+            fontWeight: 700,
+            marginBottom: 14,
+          }}
+        >
           {todayStatusLabel}
         </div>
 
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             color: "#7a8880",
-            marginBottom: 12,
+            marginBottom: 16,
           }}
         >
           {copy.today} · {new Date(today.date).toLocaleDateString("de-CH")}
@@ -340,77 +395,149 @@ function App() {
 
         <div
           style={{
-            fontSize: 26,
+            fontSize: 30,
             fontWeight: 600,
-            marginBottom: 10,
+            marginBottom: 14,
           }}
         >
           {copy.todayFocus[normalizeSeverity(today.daySeverity)].title}
         </div>
 
-        <div style={{ fontSize: 15, color: "#5f6f65", marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 18,
+            color: "#5f6f65",
+            marginBottom: 12,
+          }}
+        >
           {copy.todayFocus[normalizeSeverity(today.daySeverity)].detail}
         </div>
 
-        <div style={{ fontSize: 13, color: "#6f7b72" }}>
+        <div style={{ fontSize: 14, color: "#6f7b72" }}>
           {today.hasReferencePlan
             ? copy.planningBaseAvailable
             : copy.planningBaseMissing}
         </div>
       </section>
 
-      <section style={{ marginBottom: 18 }}>
-        <h2 style={{ fontSize: 20, marginBottom: 6 }}>{copy.nextDaysTitle}</h2>
-        <p style={{ color: "#66736b", margin: 0 }}>
-          {copy.nextDaysSubtitle}
-        </p>
-      </section>
+      <section
+        style={{
+          background: "#f8faf8",
+          border: "1px solid #e1e8e2",
+          borderRadius: 20,
+          padding: 40,
+          marginBottom: 60,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 26,
+            fontWeight: 600,
+            marginBottom: 30,
+            textAlign: "center",
+          }}
+        >
+          Rollierende 28-Tage-Sicht
+        </div>
 
-      <section style={{ marginBottom: 40 }}>
-        {visibleDays.slice(0, 7).map((day, index) => (
-          <div
-            key={day.date}
-            style={{
-              background: dayBackground(day.daySeverity),
-              padding: "28px 30px",
-              marginBottom: 10,
-              border: "1px solid #e2e8e2",
-              borderRadius: 14,
-              textAlign: "left",
-            }}
-          >
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: 40,
+          }}
+        >
+          {visibleDays.map((day) => {
+            const severity = normalizeSeverity(day.daySeverity);
+
+            return (
+              <div
+                key={day.date}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: 28,
+                }}
+              >
+                <div
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 999,
+                    background: severityColor(severity),
+                    marginBottom: 10,
+                  }}
+                />
+
+                <div
+                  style={{
+                    fontSize: 10,
+                    color: "#66736b",
+                    writingMode: "vertical-rl",
+                    transform: "rotate(180deg)",
+                  }}
+                >
+                  {new Date(day.date).toLocaleDateString("de-CH", {
+                    day: "2-digit",
+                    month: "2-digit",
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 30,
+            flexWrap: "wrap",
+            color: "#4f5d55",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
               style={{
-                fontSize: 13,
-                color: "#66736b",
-                marginBottom: 6,
+                width: 14,
+                height: 14,
+                borderRadius: 999,
+                background: "#1f8f4e",
               }}
-            >
-              {index === 0
-                ? copy.today
-                : index === 1
-                  ? copy.tomorrow
-                  : copy.followingDay}{" "}
-              · {new Date(day.date).toLocaleDateString("de-CH")}
-            </div>
+            />
 
-            <div
-              style={{
-                fontSize: 17,
-                fontWeight: 600,
-                marginBottom: 4,
-              }}
-            >
-              {copy.daySentence[normalizeSeverity(day.daySeverity)]}
-            </div>
-
-            <div style={{ fontSize: 13, color: "#66736b" }}>
-              {day.hasReferencePlan
-                ? copy.planningBaseAvailable
-                : copy.planningBaseMissingShort}
-            </div>
+            <span>Stabile Lage</span>
           </div>
-        ))}
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 999,
+                background: "#d9a404",
+              }}
+            />
+
+            <span>Erhöhte Aufmerksamkeit</span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 999,
+                background: "#d92d20",
+              }}
+            />
+
+            <span>Kritische Lage</span>
+          </div>
+        </div>
       </section>
     </main>
   );
