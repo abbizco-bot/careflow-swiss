@@ -67,9 +67,26 @@ function applyDemoScenarioToDays(
   });
 }
 
+function createFallbackDemoDays(scenario?: DemoScenario): Day[] {
+  const startDate = scenario?.date ?? "2026-06-10";
+
+  const baseDays = Array.from({ length: 28 }, (_, index) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + index);
+
+    return {
+      date: date.toISOString().slice(0, 10),
+      daySeverity: "stable",
+      hasReferencePlan: true,
+    };
+  });
+
+  return applyDemoScenarioToDays(baseDays, scenario);
+}
+
 function App() {
   const [days, setDays] = useState<Day[]>([]);
-  
+
   const [selectedScenarioKey, setSelectedScenarioKey] =
     useState<DemoScenarioKey>("stable");
 
@@ -77,21 +94,25 @@ function App() {
     (scenario) => scenario.key === selectedScenarioKey
   );
 
-  const stableDays = days.filter(
+  const visibleDays =
+    days.length > 0 ? days : createFallbackDemoDays(selectedScenario);
+
+  const stableDays = visibleDays.filter(
     (day) => normalizeSeverity(day.daySeverity) === "stable"
   ).length;
 
-  const attentionDays = days.filter(
+  const attentionDays = visibleDays.filter(
     (day) => normalizeSeverity(day.daySeverity) === "attention"
   ).length;
 
-  const criticalDays = days.filter(
+  const criticalDays = visibleDays.filter(
     (day) => normalizeSeverity(day.daySeverity) === "critical"
   ).length;
 
-  const today = days[0];
+  const today = visibleDays[0];
 
-  const todaySeverity = selectedScenario?.severity ?? normalizeSeverity(today?.daySeverity);
+  const todaySeverity =
+    selectedScenario?.severity ?? normalizeSeverity(today?.daySeverity);
 
   const todayStatusLabel =
     todaySeverity === "critical"
@@ -100,8 +121,8 @@ function App() {
         ? "Angespannte Lage"
         : "Stabile Lage";
 
-  const startDate = days[0]?.date;
-  const endDate = days[days.length - 1]?.date;
+  const startDate = visibleDays[0]?.date;
+  const endDate = visibleDays[visibleDays.length - 1]?.date;
 
   const formattedStartDate = startDate
     ? new Date(startDate).toLocaleDateString("de-CH")
@@ -111,7 +132,7 @@ function App() {
     ? new Date(endDate).toLocaleDateString("de-CH")
     : "";
 
-    useEffect(() => {
+  useEffect(() => {
     async function load() {
       const startDate =
         selectedScenario?.date ?? new Date().toISOString().slice(0, 10);
@@ -124,9 +145,9 @@ function App() {
 
       const data = await res.json();
       const baseDays = data.days || [];
-      
+
       // DEMO ONLY: apply visual scenario overlay
-     
+
       const demoDays = applyDemoScenarioToDays(baseDays, selectedScenario);
 
       setDays(demoDays);
@@ -134,8 +155,8 @@ function App() {
 
     load();
   }, [selectedScenario]);
- 
- return (
+
+  return (
     <main
       style={{
         maxWidth: 980,
@@ -216,14 +237,12 @@ function App() {
         </div>
 
         <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
-          {days.length > 0
-            ? `${formattedStartDate} – ${formattedEndDate}`
-            : "Lade Zeitraum..."}
+          {formattedStartDate} – {formattedEndDate}
         </div>
 
         <div style={{ lineHeight: 1.7, color: "#36443c" }}>
           <strong>
-            {copy.periodIntro} {days.length || 28} Tagen:
+            {copy.periodIntro} {visibleDays.length} Tagen:
           </strong>
           <br />
           {stableDays} {copy.stableDays}
@@ -234,54 +253,57 @@ function App() {
         </div>
       </section>
 
-<section
-  style={{
-    marginBottom: 28,
-    display: "flex",
-    justifyContent: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  }}
->
-  
-{demoScenarios.map((scenario) => {
-    const isSelected = scenario.key === selectedScenarioKey;
-
-    return (
-      <button
-        key={scenario.key}
-        type="button"
-        onClick={() => setSelectedScenarioKey(scenario.key)}
+      <section
         style={{
-          padding: "8px 14px",
-          borderRadius: 999,
-          border: isSelected ? "1px solid #617468" : "1px solid #d6ded8",
-          background: isSelected ? "#eef3ef" : "#ffffff",
-          color: "#2f3b34",
-          fontSize: 13,
-          cursor: "pointer",
+          marginBottom: 28,
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          flexWrap: "wrap",
         }}
       >
-        {scenario.label}
-      </button>
-    );
-  })}
-</section>
+        {demoScenarios.map((scenario) => {
+          const isSelected = scenario.key === selectedScenarioKey;
+
+          return (
+            <button
+              key={scenario.key}
+              type="button"
+              onClick={() => setSelectedScenarioKey(scenario.key)}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 999,
+                border: isSelected
+                  ? "1px solid #617468"
+                  : "1px solid #d6ded8",
+                background: isSelected ? "#eef3ef" : "#ffffff",
+                color: "#2f3b34",
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              {scenario.label}
+            </button>
+          );
+        })}
+      </section>
+
       {selectedScenario && (
-  <div
-    style={{
-      marginBottom: 20,
-      textAlign: "center",
-      color: "#5f6f65",
-      fontSize: 14,
-    }}
-  >
-    <div style={{ fontWeight: 500, marginBottom: 4 }}>
-      {selectedScenario.title}
-    </div>
-    <div>{selectedScenario.description}</div>
-  </div>
-)}
+        <div
+          style={{
+            marginBottom: 20,
+            textAlign: "center",
+            color: "#5f6f65",
+            fontSize: 14,
+          }}
+        >
+          <div style={{ fontWeight: 500, marginBottom: 4 }}>
+            {selectedScenario.title}
+          </div>
+          <div>{selectedScenario.description}</div>
+        </div>
+      )}
+
       <section
         style={{
           background: "#eef3ef",
@@ -310,8 +332,7 @@ function App() {
             marginBottom: 12,
           }}
         >
-          {copy.today} ·{" "}
-          {days[0] ? new Date(days[0].date).toLocaleDateString("de-CH") : ""}
+          {copy.today} · {new Date(today.date).toLocaleDateString("de-CH")}
         </div>
 
         <div
@@ -321,19 +342,15 @@ function App() {
             marginBottom: 10,
           }}
         >
-          {days[0]
-            ? copy.todayFocus[normalizeSeverity(days[0].daySeverity)].title
-            : "Lade Daten..."}
+          {copy.todayFocus[normalizeSeverity(today.daySeverity)].title}
         </div>
 
         <div style={{ fontSize: 15, color: "#5f6f65", marginBottom: 8 }}>
-          {days[0]
-            ? copy.todayFocus[normalizeSeverity(days[0].daySeverity)].detail
-            : ""}
+          {copy.todayFocus[normalizeSeverity(today.daySeverity)].detail}
         </div>
 
         <div style={{ fontSize: 13, color: "#6f7b72" }}>
-          {days[0]?.hasReferencePlan
+          {today.hasReferencePlan
             ? copy.planningBaseAvailable
             : copy.planningBaseMissing}
         </div>
@@ -347,7 +364,7 @@ function App() {
       </section>
 
       <section style={{ marginBottom: 40 }}>
-        {days.slice(0, 7).map((day, index) => (
+        {visibleDays.slice(0, 7).map((day, index) => (
           <div
             key={day.date}
             style={{
