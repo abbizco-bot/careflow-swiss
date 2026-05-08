@@ -440,15 +440,17 @@ function App() {
           Rollierende 28-Tage-Sicht
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginBottom: 40,
-          }}
-        >
+       <div
+         style={{
+           display: "flex",
+           gap: 12,
+           justifyContent: "center",
+           flexWrap: "nowrap",
+           overflowX: "auto",
+           paddingBottom: 12,
+           marginBottom: 40,
+         }}
+       >
           {visibleDays.map((day) => {
             const severity = normalizeSeverity(day.daySeverity);
 
@@ -459,7 +461,8 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  width: 28,
+                  width: 26,
+                  flexShrink: 0,
                 }}
               >
                 <div
