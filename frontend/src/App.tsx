@@ -5,6 +5,11 @@ import {
   rollingLeadershipCopy,
   type Severity,
 } from "./rollingLeadership.copy";
+import {
+  demoScenarios,
+  type DemoScenario,
+  type DemoScenarioKey,
+} from "./demo/demoScenarios";
 
 const copy = rollingLeadershipCopy[currentLanguage];
 
@@ -27,8 +32,50 @@ function dayBackground(daySeverity?: string) {
   return "#ffffff";
 }
 
+// DEMO ONLY:
+// This function overrides backend data to simulate leadership scenarios
+// for pilot presentations. Not part of production logic.
+
+function applyDemoScenarioToDays(
+  days: Day[],
+  scenario?: DemoScenario
+): Day[] {
+  if (!scenario) return days;
+
+  return days.map((day, index) => {
+    const newDay = { ...day };
+
+    if (scenario.key === "stable") {
+      newDay.daySeverity = "stable";
+    }
+
+    if (scenario.key === "mixed") {
+      newDay.daySeverity = index === 3 ? "attention" : "stable";
+    }
+
+    if (scenario.key === "critical") {
+      if (index === 0) {
+        newDay.daySeverity = "critical";
+      } else if (index === 2) {
+        newDay.daySeverity = "attention";
+      } else {
+        newDay.daySeverity = "stable";
+      }
+    }
+
+    return newDay;
+  });
+}
+
 function App() {
   const [days, setDays] = useState<Day[]>([]);
+  
+  const [selectedScenarioKey, setSelectedScenarioKey] =
+    useState<DemoScenarioKey>("stable");
+
+  const selectedScenario = demoScenarios.find(
+    (scenario) => scenario.key === selectedScenarioKey
+  );
 
   const stableDays = days.filter(
     (day) => normalizeSeverity(day.daySeverity) === "stable"
@@ -42,6 +89,17 @@ function App() {
     (day) => normalizeSeverity(day.daySeverity) === "critical"
   ).length;
 
+  const today = days[0];
+
+  const todaySeverity = selectedScenario?.severity ?? normalizeSeverity(today?.daySeverity);
+
+  const todayStatusLabel =
+    todaySeverity === "critical"
+      ? "Kritische Lage"
+      : todaySeverity === "attention"
+        ? "Angespannte Lage"
+        : "Stabile Lage";
+
   const startDate = days[0]?.date;
   const endDate = days[days.length - 1]?.date;
 
@@ -53,24 +111,31 @@ function App() {
     ? new Date(endDate).toLocaleDateString("de-CH")
     : "";
 
-  useEffect(() => {
+    useEffect(() => {
     async function load() {
-      const today = new Date().toISOString().slice(0, 10);
+      const startDate =
+        selectedScenario?.date ?? new Date().toISOString().slice(0, 10);
 
       const res = await fetch(
         "http://localhost:3001/rolling-planning/window?startDate=" +
-          today +
+          startDate +
           "&windowDays=28"
       );
 
       const data = await res.json();
-      setDays(data.days || []);
+      const baseDays = data.days || [];
+      
+      // DEMO ONLY: apply visual scenario overlay
+     
+      const demoDays = applyDemoScenarioToDays(baseDays, selectedScenario);
+
+      setDays(demoDays);
     }
 
     load();
-  }, []);
-
-  return (
+  }, [selectedScenario]);
+ 
+ return (
     <main
       style={{
         maxWidth: 980,
@@ -169,6 +234,54 @@ function App() {
         </div>
       </section>
 
+<section
+  style={{
+    marginBottom: 28,
+    display: "flex",
+    justifyContent: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  }}
+>
+  
+{demoScenarios.map((scenario) => {
+    const isSelected = scenario.key === selectedScenarioKey;
+
+    return (
+      <button
+        key={scenario.key}
+        type="button"
+        onClick={() => setSelectedScenarioKey(scenario.key)}
+        style={{
+          padding: "8px 14px",
+          borderRadius: 999,
+          border: isSelected ? "1px solid #617468" : "1px solid #d6ded8",
+          background: isSelected ? "#eef3ef" : "#ffffff",
+          color: "#2f3b34",
+          fontSize: 13,
+          cursor: "pointer",
+        }}
+      >
+        {scenario.label}
+      </button>
+    );
+  })}
+</section>
+      {selectedScenario && (
+  <div
+    style={{
+      marginBottom: 20,
+      textAlign: "center",
+      color: "#5f6f65",
+      fontSize: 14,
+    }}
+  >
+    <div style={{ fontWeight: 500, marginBottom: 4 }}>
+      {selectedScenario.title}
+    </div>
+    <div>{selectedScenario.description}</div>
+  </div>
+)}
       <section
         style={{
           background: "#eef3ef",
@@ -180,12 +293,20 @@ function App() {
           boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
         }}
       >
+        <div style={{ fontSize: 14, marginBottom: 6, color: "#6b7a70" }}>
+          {selectedScenario?.label}
+        </div>
+
+        <div style={{ fontSize: 32, fontWeight: 600, marginBottom: 12 }}>
+          {todayStatusLabel}
+        </div>
+
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
-            color: "#5f6f65",
+            color: "#7a8880",
             marginBottom: 12,
           }}
         >
