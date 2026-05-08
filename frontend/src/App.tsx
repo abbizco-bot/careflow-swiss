@@ -159,8 +159,8 @@ function App() {
   return (
     <main
       style={{
-        maxWidth: 980,
-        margin: "48px auto",
+        maxWidth: 1280,
+        margin: "72px auto",
         fontFamily: "Arial",
         color: "#1f2a24",
         padding: "0 24px",
@@ -198,7 +198,10 @@ function App() {
           CareFlow-Swiss
         </div>
 
-        <h1 style={{ fontSize: 30, margin: 0 }}>{copy.appTitle}</h1>
+      <h1 style={{ fontSize: 42, margin: 0, fontWeight: 600 }}>
+        {copy.appTitle}
+      </h1>
+
       </header>
 
       <section style={{ marginBottom: 28, textAlign: "center" }}>
@@ -206,8 +209,8 @@ function App() {
           style={{
             maxWidth: 760,
             margin: "0 auto",
-            lineHeight: 1.55,
-            color: "#526158",
+            lineHeight: 1.8,
+            color: "#4f5d55",
           }}
         >
           {copy.appSubtitle}
@@ -218,7 +221,7 @@ function App() {
         style={{
           background: "#f7f9f7",
           border: "1px solid #e1e8e2",
-          padding: 24,
+          padding: 36,
           marginBottom: 28,
           borderRadius: 16,
           textAlign: "center",
@@ -308,7 +311,7 @@ function App() {
         style={{
           background: "#eef3ef",
           border: "1px solid #d8e2da",
-          padding: 36,
+          padding: 56,
           marginBottom: 42,
           borderRadius: 20,
           textAlign: "center",
@@ -319,7 +322,7 @@ function App() {
           {selectedScenario?.label}
         </div>
 
-        <div style={{ fontSize: 32, fontWeight: 600, marginBottom: 12 }}>
+        <div style={{ fontSize: 52, fontWeight: 600, marginBottom: 12 }}>
           {todayStatusLabel}
         </div>
 
@@ -369,7 +372,7 @@ function App() {
             key={day.date}
             style={{
               background: dayBackground(day.daySeverity),
-              padding: "18px 22px",
+              padding: "28px 30px",
               marginBottom: 10,
               border: "1px solid #e2e8e2",
               borderRadius: 14,
