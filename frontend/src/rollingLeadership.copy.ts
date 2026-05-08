@@ -6,14 +6,14 @@ export const currentLanguage: Language = "de";
 
 export const rollingLeadershipCopy = {
   de: {
-    appTitle: "Rolling Leadership View",
+    appTitle: "CareFlow-Swiss",
     appSubtitle:
-      "Eine ruhige Führungsansicht für die nächsten 28 Tage. CareFlow zeigt keine Dienstplanung, sondern macht operative Lage und Führungsaufmerksamkeit sichtbar.",
+      "Ein ruhiger Führungs- und Decision-Layer für Schweizer Alters- und Pflegeheime. CareFlow ersetzt keine Dienstplanung, sondern macht Personallage, Abweichungen und Führungsbedarf früh sichtbar.",
 
-    periodLabel: "Zeitraum",
+    periodLabel: "Rolling View",
     periodIntro: "In den nächsten",
 
-    stableDays: "Tage stabil",
+    stableDays: "Tage mit stabiler Lage",
     attentionDays: "Tage mit erhöhter Aufmerksamkeit",
     criticalDays: "Tage mit kritischer Lage",
 
@@ -22,7 +22,8 @@ export const rollingLeadershipCopy = {
     followingDay: "Folgetag",
 
     nextDaysTitle: "Nächste Tage",
-    nextDaysSubtitle: "Übersicht der kurzfristigen Führungslage.",
+    nextDaysSubtitle:
+      "Eine verdichtete Übersicht der kurzfristigen Führungslage auf Basis bestehender Planungs- und Personaldaten.",
 
     planningBaseAvailable: "Planungsgrundlage vorhanden",
     planningBaseMissing: "Keine Planungsgrundlage hinterlegt",
@@ -35,11 +36,11 @@ export const rollingLeadershipCopy = {
       },
       attention: {
         title: "Heutige Lage: angespannt",
-        detail: "Einzelne Dienste sollten geprüft werden.",
+        detail: "Einzelne Dienste sollten fachlich geprüft werden.",
       },
       critical: {
         title: "Heutige Lage: kritisch",
-        detail: "Führungsentscheid erforderlich.",
+        detail: "Führungsentscheidung erforderlich.",
       },
     },
 
