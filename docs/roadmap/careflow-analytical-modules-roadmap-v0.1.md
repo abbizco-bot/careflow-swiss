@@ -706,3 +706,59 @@ The following ADRs should be considered after this roadmap is saved:
 6. Create a dedicated ADR for Multilingual Rendering and Swiss Localization.
 7. Create a dedicated ADR for the Communication and Interaction Module boundary, unless ADR-079 to ADR-081 are considered sufficient.
 8. Revisit the module roadmap after the first pilot presentation.
+
+
+Neue Module
+
+## Erweiterung: Operative Beobachtungs- und Eskalationssignale (Referenz: „Stop and Watch“)
+
+### Kontext
+In Pflegeorganisationen existieren strukturierte Prozesse zur frühzeitigen Erkennung von Veränderungen bei Bewohnern/Kunden (z. B. „Stop and Watch“). Diese Prozesse erfassen beobachtete Auffälligkeiten und führen über eine definierte Eskalationskette zu Triage, Massnahmenplanung und Evaluation.
+
+Diese Beobachtungen sind heute nicht Teil der klassischen Dienstplanung, haben jedoch direkten Einfluss auf die operative Belastung und Führungslage.
+
+### Bedeutung für CareFlow
+CareFlow versteht sich als Führungs- und Decision-Layer. Die tatsächliche Lage einer Abteilung ergibt sich nicht nur aus:
+- geplanter Besetzung
+- effektiver Besetzung
+- Abwesenheiten
+- Qualifikation
+
+sondern auch aus:
+- erhöhtem Beobachtungsbedarf
+- gehäuften Auffälligkeiten bei Bewohnern
+- laufenden Abklärungen und Massnahmenprozessen
+
+Diese Faktoren wirken als **Lageverstärker**, auch wenn keine formale Unterdeckung vorliegt.
+
+### Aktuelle Einordnung (Phase 9–10)
+- Keine Implementierung im aktuellen MVP
+- Keine Integration in bestehende API- oder Datenmodelle
+- Verwendung ausschliesslich als konzeptionelle Referenz für Pilotkommunikation
+
+### Mögliche Weiterentwicklung (post-MVP)
+Einführung eines konzeptionellen Moduls:
+**Operational Observation Signals**
+
+Mögliche Eigenschaften:
+- Erfassung oder Import von Beobachtungsmeldungen (z. B. „Stop and Watch“)
+- Statusmodell: erfasst → triagiert → in Klärung → Massnahme geplant → evaluiert
+- Aggregation auf Tages-/Abteilungsebene
+- Keine medizinische Bewertung, sondern rein kontextuelle Darstellung
+
+### Integration in Leadership View (zukünftig)
+- Verwendung als zusätzlicher Kontextlayer in der Tageslage
+- Beispielhafte Darstellung:
+  - „Mehrere Beobachtungsmeldungen in Abklärung“
+  - „Erhöhter Betreuungs- und Beobachtungsbedarf“
+- Einfluss auf Lagebewertung möglich (z. B. von „stabil“ zu „angespannt“)
+
+### Offene Architekturfragen
+- Datenquelle: Eigenes CF-Modul vs. Import aus Systemen wie CareCoach
+- Granularität: Einzelmeldung vs. aggregierte Signale
+- Datenschutz und fachliche Abgrenzung zur Pflegeakte
+- Verantwortlichkeiten und Sichtbarkeit (Pflege vs. Führung)
+
+### Status
+Beobachtung aufgenommen und als relevante Erweiterung für die operative Lagebewertung bestätigt.
+Umsetzung bewusst zurückgestellt bis nach erfolgreichem Pilot von CareFlow v0.1.
