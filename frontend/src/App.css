@@ -182,3 +182,31 @@
     border-right-color: var(--border);
   }
 }
+.view-switch {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: -20px 0 28px;
+}
+
+.view-switch span {
+  color: #66736b;
+  font-size: 14px;
+}
+
+.view-switch button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d7dce5;
+  background: #ffffff;
+  color: #33413a;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.view-switch button.active {
+  background: #eef3ff;
+  border-color: #7a8fb8;
+  font-weight: 600;
+}

@@ -29,7 +29,8 @@ type DemoPage =
   | "staff"
   | "qualifications"
   | "reports"
-  | "settings";
+  | "settings"
+  | "employee";
 
 type NavigationItem = {
   key: DemoPage;
@@ -65,14 +66,15 @@ type DayViewModel = {
 
 const navigationItems: NavigationItem[] = [
   { key: "rolling", label: "Rollierende Übersicht", isEnabled: true },
+  { key: "employee", label: "Mein CareFlow", isEnabled: true },
   { key: "day", label: "Tagesansicht", isEnabled: true },
+  { key: "reports", label: "Reports", isEnabled: false },
   { key: "week", label: "Wochenüberblick", isEnabled: true },
   { key: "deviations", label: "Abweichungen", isEnabled: true },
   { key: "interventions", label: "Interventionen", isEnabled: false },
   { key: "staff", label: "Personal", isEnabled: false },
   { key: "qualifications", label: "Qualifikationen", isEnabled: false },
-  { key: "reports", label: "Reports", isEnabled: false },
-  { key: "settings", label: "Einstellungen", isEnabled: false },
+   { key: "settings", label: "Einstellungen", isEnabled: false },
 ];
 
 function normalizeSeverity(daySeverity?: string): Severity {
@@ -303,14 +305,13 @@ function getDayViewModel(severity: Severity): DayViewModel {
       "Keine unmittelbare Intervention erforderlich. Lage bleibt stabil.",
   };
 }
-
 function App() {
   const [activePage, setActivePage] = useState<DemoPage>("rolling");
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [selectedScenarioKey, setSelectedScenarioKey] =
     useState<DemoScenarioKey>("critical");
 
-  const selectedScenario =
+   const selectedScenario =
     demoScenarios.find((scenario) => scenario.key === selectedScenarioKey) ??
     demoScenarios[0];
 
@@ -613,9 +614,46 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
             {copy.appSubtitle}
           </p>
         </header>
+        
+           {activePage === "employee" && (
+          <section
+            style={{
+              background: "#ffffff",
+              borderRadius: 24,
+              padding: 32,
+              maxWidth: 900,
+              margin: "0 auto 32px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+            }}
+          >
+            <h2>Mein CareFlow</h2>
+            <h3>Anna Meier – FaGe</h3>
+            <p style={{ color: "#66736b" }}>Meine nächsten 28 Tage</p>
 
+            <ul>
+              <li>22.06 Frühdienst</li>
+              <li>23.06 Frühdienst</li>
+              <li>24.06 Frei</li>
+              <li>25.06 Spätdienst</li>
+              <li>26.06 Nachtdienst</li>
+            </ul>
+
+            <hr />
+
+            <p>
+              Belastung:
+              <strong style={{ color: "#d17c00" }}> erhöht nächste Woche</strong>
+            </p>
+
+            <p>Qualifikationen: FaGe / Wundmanagement</p>
+            <p>Hinweis: Hohe Einsatzdichte nächste Woche</p>
+          </section>
+        )}
+     
         <div
+  
           style={{
+            display: activePage === "employee" ? "none" : "block",
             background: "#ffffff",
             border: "1px solid #e1e8e2",
             borderRadius: 16,
@@ -628,10 +666,10 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         >
           Bestehende Dienstplanung bleibt führend. CareFlow verdichtet vorhandene
           Planungs- und Abwesenheitsdaten zu einer Führungssicht.
-        </div>
+               </div>
 
-        <section
-          style={{
+                   <section
+              style={{
             background: "#f7f9f7",
             border: "1px solid #e1e8e2",
             padding: 40,
@@ -833,9 +871,11 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
             gap: 16,
             marginBottom: 24,
+            textAlign: "center",
+              wordBreak: "break-word",
           }}
         >
           <SummaryTile label="Dienste geplant" value={dayView.summaryCounts.planned} color="#426b89" />
@@ -1143,6 +1183,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
 
   function renderActivePage() {
     if (activePage === "rolling") return renderRollingOverview();
+    if (activePage === "employee") return renderEmployeeView();
     if (activePage === "day") return renderDayView();
     if (activePage === "week") return renderWeekView();
     if (activePage === "deviations") return renderDeviationsView();
@@ -1154,6 +1195,192 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       />
     );
   }
+    function renderEmployeeView() {
+  return (
+    <>
+      <PageHeader
+        title="Mein CareFlow"
+        subtitle="Persönliche Einsatz- und Belastungsperspektive für die nächsten 28 Tage."
+      />
+
+      <section
+        style={{
+          background: "#ffffff",
+          border: "1px solid #e1e8e2",
+          borderRadius: 20,
+          padding: 28,
+          marginBottom: 28,
+        }}
+      >
+        <h2 style={{ marginTop: 0 }}>Anna Meier – FaGe</h2>
+
+        <p style={{ color: "#4f5d55", lineHeight: 1.7 }}>
+          Diese Sicht zeigt nur die eigene Planung, die eigene Belastung und persönliche Hinweise.
+          Andere Mitarbeitende und Führungsindikatoren sind nicht sichtbar.
+        </p>
+
+        <div style={{ marginTop: 24, marginBottom: 24 }}>
+          <strong style={{ color: "#2f3f36" }}>
+            Belastungsverlauf – nächste 28 Tage
+          </strong>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              marginTop: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            {[
+              "stable", "stable", "stable", "stable",
+              "attention", "attention",
+              "stable", "stable", "stable",
+              "critical",
+              "stable", "stable", "stable", "stable",
+              "attention",
+              "stable", "stable", "stable",
+              "stable", "stable", "stable", "stable",
+              "stable", "attention",
+              "stable", "stable", "stable", "stable",
+            ].map((status, index) => (
+              <div
+                key={index}
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 6,
+                  background:
+                    status === "critical"
+                      ? "#d95c5c"
+                      : status === "attention"
+                      ? "#e1b24d"
+                      : "#4ea56b",
+                }}
+              />
+            ))}
+          </div>
+                    <div
+            style={{
+              display: "flex",
+              gap: 16,
+              justifyContent: "center",
+              marginTop: 10,
+              fontSize: 12,
+              color: "#66736b",
+            }}
+          >
+            <span>🟢 stabil</span>
+            <span>🟡 erhöht</span>
+            <span>🔴 kritisch</span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#fff8ea",
+            border: "1px solid #f0d99c",
+            padding: 18,
+            borderRadius: 14,
+            marginTop: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            textAlign: "left",
+          }}
+        >
+          <div style={{ fontSize: 28 }}>⚠️</div>
+
+          <div>
+            <strong>Hinweis</strong>
+            <p style={{ margin: "6px 0 0", lineHeight: 1.5 }}>
+              Hohe Einsatzdichte zwischen 24.06 und 27.06. Erholungszeit prüfen.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(120px, 1fr))",
+            gap: 16,
+            marginTop: 24,
+            textAlign: "center",
+            wordBreak: "break-word",
+          }}
+        >
+          <div style={{ background: "#f7f9f7", padding: 18, borderRadius: 14 }}>
+            <strong>Nächste Dienste</strong>
+            <p>Früh · Früh · Frei · Spät · Nacht</p>
+          </div>
+
+          <div style={{ background: "#fff8ea", padding: 18, borderRadius: 14 }}>
+            <strong>Belastung</strong>
+            <p>Erhöht nächste Woche</p>
+          </div>
+
+          <div style={{ background: "#f7f9f7", padding: 18, borderRadius: 14 }}>
+            <strong>Qualifikation</strong>
+            <p style={{ lineHeight: 1.5 }}>
+              FaGe
+              <br />
+              Wund-
+              <br />
+              management
+            </p>
+          </div>
+<div style={{ background: "#f7f9f7", padding: 18, borderRadius: 14 }}>
+  <strong>Präferenzen</strong>
+
+  <p>
+    Wunschdienst:
+    <br />
+    Frühdienst
+    <br />
+    Keine Nachtfolge
+  </p>
+</div>
+           <div style={{ background: "#f7f9f7", padding: 18, borderRadius: 14 }}>
+            <strong>Abwesenheit</strong>
+            <p>
+              Ferien geplant:
+              <br />
+              14.07 – 20.07
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: "#f7f9f7",
+              padding: 18,
+              borderRadius: 14,
+              gridColumn: "span 2",
+            }}
+          >
+            <strong>Weiterbildung</strong>
+            <p>
+              Geplant:
+              <br />
+              Demenzmodul
+              <br />
+              Juli 2026
+            </p>
+          </div>
+        </div>
+
+        <p
+          style={{
+            marginTop: 24,
+            color: "#66736b",
+            fontSize: 13,
+          }}
+        >
+          Nicht sichtbar: andere Mitarbeitende · Teamrisiken · Führungsindikatoren
+        </p>
+      </section>
+    </>
+  );
+}
 
   return renderShell(renderActivePage());
 }
@@ -1190,6 +1417,7 @@ type SummaryTileProps = {
 
 function SummaryTile({ label, value, color }: SummaryTileProps) {
   return (
+
     <div
       style={{
         background: "#ffffff",
