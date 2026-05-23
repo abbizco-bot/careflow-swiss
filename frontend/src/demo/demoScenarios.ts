@@ -55,7 +55,7 @@ export const demoScenarios: DemoScenario[] = [
         "Lage bleibt beobachtungspflichtig, Risiken werden reduziert.",
     },
   },
-    {
+  {
     key: "critical",
     label: "Kritisch",
     date: "2026-06-15",
@@ -67,15 +67,14 @@ export const demoScenarios: DemoScenario[] = [
       "Krankmeldung einer Fachperson, operative Unterdeckung und Qualifikationslücke im Frühdienst.",
     leadershipHint:
       "Springerpool prüfen, interne Verschiebung klären oder Tagesfunktion neu zuweisen.",
-    intervention: {
-    title: "Mögliche Führungsintervention",
-    action:
-      "Springerpool aktiviert und Tagesfunktion neu zugewiesen.",
-    effect:
-      "Lage stabilisiert sich teilweise, bleibt beobachtungspflichtig.",
-  },
-
-     afterIntervention:
+    afterIntervention:
       "Lage stabilisiert sich teilweise. Operative Beobachtung bleibt erforderlich.",
+    intervention: {
+      title: "Mögliche Führungsintervention",
+      action:
+        "Springerpool aktiviert und Tagesfunktion neu zugewiesen.",
+      effect:
+        "Lage stabilisiert sich teilweise, bleibt beobachtungspflichtig.",
+    },
   },
 ];

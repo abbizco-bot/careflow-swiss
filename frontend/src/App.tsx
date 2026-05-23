@@ -699,7 +699,35 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                 color: "#2f3f36",
               }}
             >
-              {selectedScenario.description}
+                      {selectedScenario.description}
+
+{selectedScenario.intervention && (
+  <div
+    style={{
+      marginTop: 16,
+      paddingTop: 14,
+      borderTop: "1px solid #d8e2da",
+      fontWeight: 500,
+      fontSize: 15,
+      lineHeight: 1.5,
+      color: "#3f5147",
+    }}
+  >
+    <div style={{ fontWeight: 800, marginBottom: 8 }}>
+      {selectedScenario.intervention.title}
+    </div>
+
+    <div>
+      <strong>Intervention: </strong>
+      {selectedScenario.intervention.action}
+    </div>
+
+    <div style={{ marginTop: 6 }}>
+      <strong>Wirkung: </strong>
+      {selectedScenario.intervention.effect}
+    </div>
+  </div>
+)}
             </div>
           </section>
         )}
@@ -1080,10 +1108,30 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                   </span>
                   <span>{severity === "critical" ? "Frühdienst" : index % 2 === 0 ? "Spätdienst" : "Frühdienst"}</span>
                   <span>
-                    {severity === "critical"
-                      ? "Unterdeckung und Qualifikationslücke · Springerpool prüfen"
-                      : "Qualifikation knapp · Reserve prüfen"}
-                  </span>
+  <span>
+    {severity === "critical"
+      ? "Unterdeckung und Qualifikationslücke · Springerpool prüfen"
+      : "Qualifikation knapp · Reserve prüfen"}
+  </span>
+
+  <span
+  style={{
+    display: "block",
+    marginTop: 8,
+    paddingTop: 6,
+    borderTop: "1px solid rgba(80,90,80,0.12)",
+    fontSize: 11,
+    lineHeight: 1.4,
+    fontStyle: "italic",
+    color: "#607069",
+    fontWeight: 600,
+  }}
+  >
+    {severity === "critical"
+      ? "→ Wirkung: Lage teilweise stabilisiert, weiter beobachten"
+      : "→ Wirkung: Risiko reduziert, Reserve bleibt im Blick"}
+  </span>
+</span>
                 </button>
               ))}
             </div>
@@ -1119,7 +1167,16 @@ type MetricCardProps = {
 function MetricCard({ value, label, color }: MetricCardProps) {
   return (
     <div>
-      <div style={{ fontSize: 44, fontWeight: 800, color }}>{value}</div>
+      <div
+        style={{
+          fontSize: 44,
+          fontWeight: 800,
+          color,
+          marginBottom: 8,
+        }}
+      >
+        {value}
+      </div>
       <div style={{ color: "#4f5d55" }}>{label}</div>
     </div>
   );
@@ -1138,11 +1195,30 @@ function SummaryTile({ label, value, color }: SummaryTileProps) {
         background: "#ffffff",
         border: "1px solid #e1e8e2",
         borderRadius: 18,
-        padding: 20,
+        padding: "18px 14px",
+        minHeight: 110,
         boxShadow: "0 4px 14px rgba(0,0,0,0.035)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
       }}
     >
-      <div style={{ color: "#66736b", fontSize: 13, marginBottom: 8 }}>{label}</div>
+      <div
+        style={{
+          color: "#66736b",
+          fontSize: 13,
+          lineHeight: 1.35,
+          minHeight: 38,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </div>
       <div style={{ color, fontSize: 34, fontWeight: 900 }}>{value}</div>
     </div>
   );
