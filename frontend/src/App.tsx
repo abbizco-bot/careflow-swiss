@@ -22,6 +22,7 @@ type Day = {
 
 type DemoPage =
   | "rolling"
+  | "stationA"
   | "day"
   | "week"
   | "deviations"
@@ -66,6 +67,7 @@ type DayViewModel = {
 
 const navigationItems: NavigationItem[] = [
   { key: "rolling", label: "Rollierende Übersicht", isEnabled: true },
+  { key: "stationA", label: "Wohnbereich A", isEnabled: true },
   { key: "employee", label: "Mein CareFlow", isEnabled: true },
   { key: "day", label: "Tagesansicht", isEnabled: true },
   { key: "reports", label: "Reports", isEnabled: false },
@@ -74,7 +76,7 @@ const navigationItems: NavigationItem[] = [
   { key: "interventions", label: "Interventionen", isEnabled: false },
   { key: "staff", label: "Personal", isEnabled: false },
   { key: "qualifications", label: "Qualifikationen", isEnabled: false },
-   { key: "settings", label: "Einstellungen", isEnabled: false },
+  { key: "settings", label: "Einstellungen", isEnabled: false },
 ];
 
 function normalizeSeverity(daySeverity?: string): Severity {
@@ -1183,6 +1185,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
 
   function renderActivePage() {
     if (activePage === "rolling") return renderRollingOverview();
+    if (activePage === "stationA") return renderStationAView();
     if (activePage === "employee") return renderEmployeeView();
     if (activePage === "day") return renderDayView();
     if (activePage === "week") return renderWeekView();
@@ -1195,7 +1198,21 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       />
     );
   }
-    function renderEmployeeView() {
+    function renderStationAView() {
+  return (
+    <main className="page-shell">
+      <section className="hero-card">
+        <p className="eyebrow">Stationssicht</p>
+        <h1>Wohnbereich A</h1>
+        <p>
+          Diese Demo-Sicht verdichtet die Lage für einen einzelnen Wohnbereich.
+          Frühdienst, Spätdienst und Nachtdienst werden später separat sichtbar.
+        </p>
+      </section>
+    </main>
+  );
+}
+  function renderEmployeeView() {
   return (
     <>
       <PageHeader
