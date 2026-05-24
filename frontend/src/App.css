@@ -382,3 +382,21 @@
 .teamlead-card {
   margin-top: 24px;
 }
+.role-switcher {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.role-switcher button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #d6ddd8;
+  background: white;
+  cursor: pointer;
+}
+
+.role-switcher button.active {
+  background: #113c2b;
+  color: white;
+}

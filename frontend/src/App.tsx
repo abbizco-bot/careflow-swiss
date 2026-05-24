@@ -310,6 +310,7 @@ function getDayViewModel(severity: Severity): DayViewModel {
 }
 function App() {
   const [activePage, setActivePage] = useState<DemoPage>("rolling");
+  const [activeRole, setActiveRole] = useState<"leadership" | "station" | "employee">("leadership");
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [selectedScenarioKey, setSelectedScenarioKey] =
     useState<DemoScenarioKey>("critical");
@@ -1514,7 +1515,43 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
   );
 }
 
-  return renderShell(renderActivePage());
+ return renderShell(
+  <>
+    <div className="role-switcher">
+      <button
+        className={activeRole === "leadership" ? "active" : ""}
+        onClick={() => {
+          setActiveRole("leadership");
+          setActivePage("rolling");
+        }}
+      >
+        Heimleitung
+      </button>
+
+      <button
+        className={activeRole === "station" ? "active" : ""}
+        onClick={() => {
+          setActiveRole("station");
+          setActivePage("stationA");
+        }}
+      >
+        Stationsleitung
+      </button>
+
+      <button
+        className={activeRole === "employee" ? "active" : ""}
+        onClick={() => {
+          setActiveRole("employee");
+          setActivePage("employee");
+        }}
+      >
+        Mitarbeitende
+      </button>
+    </div>
+
+    {renderActivePage()}
+  </>
+);
 }
 
 type MetricCardProps = {
