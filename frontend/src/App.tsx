@@ -24,6 +24,7 @@ type Day = {
 type DemoPage =
   | "rolling"
   | "stationA"
+  | "stationB"
   | "day"
   | "week"
   | "deviations"
@@ -69,15 +70,16 @@ type DayViewModel = {
 
 const navigationItems: NavigationItem[] = [
   { key: "rolling", label: "Rollierende Übersicht", isEnabled: true },
-  { key: "stationA", label: "Wohnbereich A", isEnabled: true },
-  { key: "employee", label: "Mitarbeitende", isEnabled: true },
-  { key: "day", label: "Tagesansicht", isEnabled: true },
-  { key: "reports", label: "Reports", isEnabled: false },
   { key: "week", label: "Wochenüberblick", isEnabled: true },
+  { key: "day", label: "Tagesansicht", isEnabled: true },
+  { key: "stationA", label: "Wohnbereich A", isEnabled: true },
+  { key: "stationB", label: "Wohnbereich B", isEnabled: false },
   { key: "deviations", label: "Abweichungen", isEnabled: true },
+  { key: "staffOverview", label: "Personalübersicht", isEnabled: true },
+  { key: "employee", label: "Mitarbeitende", isEnabled: true },
   { key: "interventions", label: "Interventionen", isEnabled: false },
-  { key: "staffOverview", label: "Personal", isEnabled: true },
   { key: "qualifications", label: "Qualifikationen", isEnabled: false },
+  { key: "reports", label: "Reports", isEnabled: false },
   { key: "settings", label: "Einstellungen", isEnabled: false },
 ];
 
@@ -312,11 +314,12 @@ function getDayViewModel(severity: Severity): DayViewModel {
 function App() {
   const [activePage, setActivePage] = useState<DemoPage>("rolling");
   const [activeRole, setActiveRole] = useState<"leadership" | "station" | "employee">("leadership");
+  
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [selectedScenarioKey, setSelectedScenarioKey] =
     useState<DemoScenarioKey>("critical");
-
-   const selectedScenario =
+  const [deviationFilter, setDeviationFilter] = useState<"all" | "wbA" | "wbB">("all");
+  const selectedScenario =
     demoScenarios.find((scenario) => scenario.key === selectedScenarioKey) ??
     demoScenarios[0];
 
@@ -1114,13 +1117,41 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       .map((day, index) => ({ day, index, severity: normalizeSeverity(day.daySeverity) }))
       .filter((item) => item.severity !== "stable");
 
+      const filteredDeviationDays = deviationDays.filter(({ index }) => {
+  const unit = index % 2 === 0 ? "wbA" : "wbB";
+
+  if (deviationFilter === "all") return true;
+  return deviationFilter === unit;
+});
+
     return (
       <>
         {renderScenarioButtons()}
         <PageHeader
-          title="Abweichungen"
-          subtitle="Relevante Planungs- und Führungssignale der nächsten 28 Tage"
-        />
+  title="Abweichungen"
+  subtitle="Relevante Planungs- und Führungssignale der nächsten 28 Tage"
+/>
+
+<section className="role-switcher">
+  <button
+    className={deviationFilter === "all" ? "active" : ""}
+    onClick={() => setDeviationFilter("all")}
+  >
+    Gesamtorganisation
+  </button>
+  <button
+    className={deviationFilter === "wbA" ? "active" : ""}
+    onClick={() => setDeviationFilter("wbA")}
+  >
+    WB A
+  </button>
+  <button
+    className={deviationFilter === "wbB" ? "active" : ""}
+    onClick={() => setDeviationFilter("wbB")}
+  >
+    WB B
+  </button>
+</section>
 
         <div
           style={{
@@ -1138,11 +1169,12 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         </div>
 
         <InfoCard title="Relevante Abweichungen">
-          {deviationDays.length === 0 ? (
+        
+          {filteredDeviationDays.length === 0 ? (
             <p style={{ margin: 0 }}>Keine relevanten Abweichungen in den nächsten 28 Tagen.</p>
           ) : (
             <div style={{ display: "grid", gap: 10 }}>
-              {deviationDays.map(({ day, index, severity }) => (
+              {filteredDeviationDays.map(({ day, index, severity }) => (
                 <button
                   key={day.date}
                   type="button"
@@ -1152,7 +1184,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                   }}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1.6fr 2fr",
+                   gridTemplateColumns: "1fr 0.8fr 1fr 1.6fr 2fr",
                     gap: 12,
                     alignItems: "center",
                     padding: 16,
@@ -1164,6 +1196,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                   }}
                 >
                   <strong>{formatShortDate(day.date)}</strong>
+                  <strong>{index % 2 === 0 ? "WB A" : "WB B"}</strong>
                   <span style={{ color: severityColor(severity), fontWeight: 900 }}>
                     {severityLabel(severity)}
                   </span>
@@ -1229,16 +1262,32 @@ padding: "32px 48px",
       }}
     >
 
-      <section className="hero-card">
-        <p className="eyebrow">Personalübersicht</p>
+  <section className="hero-card">
+  <p className="eyebrow">Personalübersicht</p>
 
-        <h1>Rollierende Personalübersicht – 28 Tage</h1>
+  <h1>Rollierende Personalübersicht – 28 Tage</h1>
 
-        <p>
-          Übersicht über Mitarbeitende, Einsatzdichte,
-          Belastung und Abwesenheiten.
-        </p>
-        <section
+  <p>
+    Übersicht über Mitarbeitende, Einsatzdichte,
+    Belastung und Abwesenheiten.
+  </p>
+</section>
+
+<section
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: 14,
+    marginBottom: 28,
+    flexWrap: "wrap",
+  }}
+>
+  <button className="toolbar-button">📅 Zeitraum: 28 Tage</button>
+  <button className="toolbar-button">🔍 Filter</button>
+  <button className="toolbar-button">⬇ Export</button>
+</section>
+
+<section
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(6, 1fr)",
@@ -1247,8 +1296,7 @@ padding: "32px 48px",
     marginBottom: 36,
   }}
 >
-
-<MetricCard label="Aktive Mitarbeitende" value={42} color="#113c2b" />
+ <MetricCard label="Aktive Mitarbeitende" value={42} color="#113c2b" />
 <MetricCard label="Hohe Belastung" value={6} color="#d08a00" />
 <MetricCard label="Kritische Lücken" value={8} color="#c43d3d" />
 <MetricCard label="Abwesenheiten" value={15} color="#2f6fb2" />
@@ -1256,7 +1304,6 @@ padding: "32px 48px",
 <MetricCard label="Einsatzdichte" value={78} color="#113c2b" />
 
 </section>
-      </section>
 
       <section className="hero-card">
 
