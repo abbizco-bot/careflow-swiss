@@ -396,48 +396,50 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
               </div>
             </div>
 
-            <nav style={{ marginTop: 34 }}>
-            
-              {navigationItems
-  .filter((item) => item.key !== "settings")
-  .map((item, index) => (
-    <div key={item.key}>
-      {[3, 5, 8].includes(index) && (
-        <div
-          style={{
-            height: 1,
-            background: "#e1e8e2",
-            margin: "14px 0",
-          }}
-        />
-      )}
+ <nav style={{ marginTop: 34 }}>
+  {navigationItems
+    .filter((item) => item.key !== "settings")
+    .map((item, index) => {
+      const isActive = activePage === item.key;
 
-      <button
-        type="button"
-        disabled={!item.isEnabled}
-        onClick={() => {
-          if (item.isEnabled) {
-            setActivePage(item.key);
-          }
-        }}
-       style={{
-  width: "100%",
-  border: "none",
-  borderRadius: 10,
-  padding: "10px 12px",
-  marginBottom: 8,
-  textAlign: "left",
-  background: "transparent",
-color: "#a8b5ad",
-fontWeight: 650,
-cursor: "not-allowed",
-  
-}}
-      >
-        {item.label}
-      </button>
-    </div>
-))}
+      return (
+        <div key={item.key}>
+          {[3, 5, 8].includes(index) && (
+            <div
+              style={{
+                height: 1,
+                background: "#e1e8e2",
+                margin: "14px 0",
+              }}
+            />
+          )}
+
+          <button
+            type="button"
+            disabled={!item.isEnabled}
+            onClick={() => {
+              if (item.isEnabled) {
+                setActivePage(item.key);
+              }
+            }}
+            style={{
+              width: "100%",
+              border: "none",
+              borderRadius: 10,
+              padding: "10px 12px",
+              marginBottom: 8,
+              textAlign: "left",
+              background: isActive ? "#edf4ef" : "transparent",
+              color: item.isEnabled ? "#10251b" : "#a8b5ad",
+              fontWeight: isActive ? 800 : 650,
+              cursor: item.isEnabled ? "pointer" : "not-allowed",
+            }}
+          >
+            {item.label}
+          </button>
+        </div>
+      );
+    })}
 </nav>
             <div style={{ marginTop: "auto", paddingTop: 24 }}>
   <button
