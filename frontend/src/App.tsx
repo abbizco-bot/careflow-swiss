@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from "react";
+import "./App.css";
 import logo from "./assets/careflow-signet.png";
 import {
   currentLanguage,
@@ -1198,17 +1199,131 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       />
     );
   }
-    function renderStationAView() {
+  function renderStationAView() {
   return (
     <main className="page-shell">
+
       <section className="hero-card">
         <p className="eyebrow">Stationssicht</p>
         <h1>Wohnbereich A</h1>
         <p>
-          Diese Demo-Sicht verdichtet die Lage für einen einzelnen Wohnbereich.
-          Frühdienst, Spätdienst und Nachtdienst werden später separat sichtbar.
+          Verdichtete Lageübersicht für den Wohnbereich.
+          Fokus auf Dienstlage und kurzfristige Führungssituation.
         </p>
       </section>
+
+      <section className="card-grid">
+
+        <article className="info-card stable">
+          <h3>Frühdienst</h3>
+          <p>Besetzung stabil</p>
+          <small>4 / 4 Mitarbeitende verfügbar</small>
+        </article>
+
+        <article className="info-card attention">
+          <h3>Spätdienst</h3>
+          <p>Erhöhte Aufmerksamkeit</p>
+          <small>1 Krankmeldung – Reserve prüfen</small>
+        </article>
+
+        <article className="info-card critical">
+          <h3>Nachtdienst</h3>
+          <p>Kritische Lage</p>
+          <small>Qualifikationslücke vorhanden</small>
+        </article>
+
+      </section>
+<section className="hero-card">
+
+  <p className="eyebrow">7-Tage Lagebild</p>
+
+  <div className="station-week-grid">
+
+    <div className="day stable">
+      <strong>Mo</strong>
+      <span>Stabil</span>
+    </div>
+
+    <div className="day stable">
+      <strong>Di</strong>
+      <span>Stabil</span>
+    </div>
+
+    <div className="day attention">
+      <strong>Mi</strong>
+      <span>Aufmerksam</span>
+    </div>
+
+    <div className="day critical">
+      <strong>Do</strong>
+      <span>Kritisch</span>
+    </div>
+
+    <div className="day stable">
+      <strong>Fr</strong>
+      <span>Stabil</span>
+    </div>
+
+    <div className="day attention">
+      <strong>Sa</strong>
+      <span>Aufmerksam</span>
+    </div>
+
+    <div className="day stable">
+      <strong>So</strong>
+      <span>Stabil</span>
+    </div>
+
+  </div>
+</section>
+<section className="hero-card">
+  <p className="eyebrow">Dienstlage im Detail</p>
+  <table className="station-detail-table">
+
+    <thead>
+      <tr>
+        <th></th>
+        <th>Frühdienst</th>
+        <th>Spätdienst</th>
+        <th>Nachtdienst</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <tr>
+        <td>Besetzung</td>
+        <td>4 / 4</td>
+        <td>3 / 4</td>
+        <td>2 / 4</td>
+      </tr>
+
+      <tr>
+        <td>Abweichungen</td>
+        <td>Keine</td>
+        <td>1 Krankmeldung</td>
+        <td>1 Ausfall</td>
+      </tr>
+
+      <tr>
+        <td>Qualifikationen</td>
+        <td>Vollständig</td>
+        <td>Reserve prüfen</td>
+        <td>Lücke</td>
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</section>
+<section className="teamlead-card">
+  <p className="eyebrow">Hinweis Teamleitung</p>
+  <p>
+    Fokus auf Spätdienst und Nachtdienst.
+    Interne Verschiebung oder Springerpool prüfen.
+  </p>
+</section>
     </main>
   );
 }
