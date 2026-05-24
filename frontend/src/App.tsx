@@ -72,14 +72,18 @@ const navigationItems: NavigationItem[] = [
   { key: "rolling", label: "Rollierende Übersicht", isEnabled: true },
   { key: "week", label: "Wochenüberblick", isEnabled: true },
   { key: "day", label: "Tagesansicht", isEnabled: true },
+
   { key: "stationA", label: "Wohnbereich A", isEnabled: true },
   { key: "stationB", label: "Wohnbereich B", isEnabled: false },
+
   { key: "deviations", label: "Abweichungen", isEnabled: true },
   { key: "staffOverview", label: "Personalübersicht", isEnabled: true },
   { key: "employee", label: "Mitarbeitende", isEnabled: true },
+
   { key: "interventions", label: "Interventionen", isEnabled: false },
   { key: "qualifications", label: "Qualifikationen", isEnabled: false },
   { key: "reports", label: "Reports", isEnabled: false },
+
   { key: "settings", label: "Einstellungen", isEnabled: false },
 ];
 
@@ -393,7 +397,8 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
             </div>
 
             <nav style={{ marginTop: 34 }}>
-              {navigationItems.map((item) => {
+            
+              {navigationItems.filter((item) => item.key !== "settings").map((item) => {
                 const isActive = activePage === item.key;
 
                 return (
@@ -423,7 +428,18 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                 );
               })}
             </nav>
-                    </aside>
+            <div style={{ marginTop: "auto", paddingTop: 24 }}>
+  <button
+    type="button"
+    disabled
+    style={{
+      width: "100%",
+    }}
+  >
+    Einstellungen
+  </button>
+</div>
+                                </aside>
         )}
 
           <main
