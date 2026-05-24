@@ -434,3 +434,70 @@
 .matrix-red {
   background: #fde2e2;
 }
+.staff-matrix-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.staff-matrix {
+  min-width: 2200px;
+}
+.staff-matrix {
+  min-width: 1500px;
+}
+
+.staff-matrix td,
+.staff-matrix th {
+  min-width: 52px;
+  height: 34px;
+  font-size: 0.85rem;
+}
+
+.staff-matrix td:first-child,
+.staff-matrix th:first-child {
+  min-width: 220px;
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 1;
+}
+.staff-matrix td,
+.staff-matrix th {
+  min-width: 52px;
+  height: 42px;
+  font-size: 0.9rem;
+}
+
+.staff-matrix {
+  min-width: 1700px;
+}
+.metric-card {
+  background: white;
+  border: 1px solid #e1e8e2;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+}
+@media (max-width: 1200px) {
+  .metric-card {
+    padding: 14px;
+  }
+
+  .staff-matrix {
+    min-width: 1700px;
+  }
+}
+
+@media (max-width: 800px) {
+  .role-switcher {
+    flex-wrap: wrap;
+  }
+
+  .staff-matrix-wrapper {
+    overflow-x: auto;
+  }
+
+  .metric-card {
+    min-width: 140px;
+  }
+}

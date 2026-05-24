@@ -361,10 +361,11 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "230px minmax(0, 1fr)",
+          gridTemplateColumns:
+          activePage === "staffOverview" ? "1fr" : "230px minmax(0, 1fr)",
             minHeight: "100vh",
           }}
-        >
+        >{activePage !== "staffOverview" && (
           <aside
             style={{
               background: "#ffffff",
@@ -419,9 +420,17 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                 );
               })}
             </nav>
-          </aside>
+                    </aside>
+        )}
 
-          <main style={{ padding: "48px 56px" }}>{content}</main>
+          <main
+  style={{
+    padding: activePage === "staffOverview" ? "24px 56px" : "48px 56px",
+    background: activePage === "staffOverview" ? "#ffffff" : undefined,
+  }}
+>
+  {content}
+</main>
         </div>
       </div>
     );
@@ -1211,7 +1220,14 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
   }
  function renderStaffOverview() {
   return (
-    <main className="page-shell">
+    <main
+      style={{
+        width: "100%",
+maxWidth: "none",
+padding: "32px 48px",
+        background: "#ffffff",
+      }}
+    >
 
       <section className="hero-card">
         <p className="eyebrow">Personalübersicht</p>
@@ -1222,6 +1238,24 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
           Übersicht über Mitarbeitende, Einsatzdichte,
           Belastung und Abwesenheiten.
         </p>
+        <section
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
+    gap: 16,
+    marginTop: 28,
+    marginBottom: 36,
+  }}
+>
+
+<MetricCard label="Aktive Mitarbeitende" value={42} color="#113c2b" />
+<MetricCard label="Hohe Belastung" value={6} color="#d08a00" />
+<MetricCard label="Kritische Lücken" value={8} color="#c43d3d" />
+<MetricCard label="Abwesenheiten" value={15} color="#2f6fb2" />
+<MetricCard label="Qualifikationslücken" value={5} color="#d08a00" />
+<MetricCard label="Einsatzdichte" value={78} color="#113c2b" />
+
+</section>
       </section>
 
       <section className="hero-card">
@@ -1272,61 +1306,54 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       <section className="hero-card">
 
   <p className="eyebrow">Rollierende Personallage – 28 Tage</p>
-
+<div className="staff-matrix-wrapper">
   <table className="staff-matrix">
-
     <thead>
       <tr>
         <th>Mitarbeitende</th>
-        <th>22</th>
-        <th>23</th>
-        <th>24</th>
-        <th>25</th>
-        <th>26</th>
-        <th>27</th>
-        <th>28</th>
+        <th>01</th><th>02</th><th>03</th><th>04</th><th>05</th><th>06</th><th>07</th>
+        <th>08</th><th>09</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th>
+        <th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th><th>21</th>
+        <th>22</th><th>23</th><th>24</th><th>25</th><th>26</th><th>27</th><th>28</th>
       </tr>
     </thead>
 
     <tbody>
-
       <tr>
         <td>Anna Müller</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-yellow">Y</td>
-        <td className="matrix-red">R</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-yellow">Y</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td>
+        <td className="matrix-yellow">S</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-red">!</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td>
+        <td className="matrix-yellow">S</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td>
       </tr>
 
       <tr>
         <td>Lukas Meier</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-yellow">Y</td>
-        <td className="matrix-yellow">Y</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-red">R</td>
-        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">S</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td><td className="matrix-green">F</td>
+        <td className="matrix-yellow">S</td><td className="matrix-yellow">S</td><td className="matrix-red">!</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-red">!</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-red">!</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
       </tr>
 
       <tr>
         <td>Sara Rossi</td>
-        <td className="matrix-red">R</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-yellow">Y</td>
-        <td className="matrix-green">G</td>
-        <td className="matrix-yellow">Y</td>
-        <td className="matrix-green">G</td>
+        <td className="matrix-red">!</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td>
+        <td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td><td className="matrix-green">F</td>
+        <td className="matrix-red">!</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-red">!</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td>
+        <td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td><td className="matrix-green">F</td>
+        <td className="matrix-red">!</td><td className="matrix-green">F</td><td className="matrix-green">F</td><td className="matrix-yellow">S</td>
       </tr>
-
     </tbody>
-
   </table>
-
+</div>
 </section>
 
     </main>
@@ -1703,19 +1730,19 @@ type MetricCardProps = {
 
 function MetricCard({ value, label, color }: MetricCardProps) {
   return (
-    <div>
+    <section className="metric-card">
       <div
         style={{
-          fontSize: 44,
+          fontSize: 40,
           fontWeight: 800,
           color,
-          marginBottom: 8,
+          marginBottom: 6,
         }}
       >
         {value}
       </div>
-      <div style={{ color: "#4f5d55" }}>{label}</div>
-    </div>
+      <div style={{ color: "#4f5d55", fontWeight: 600 }}>{label}</div>
+    </section>
   );
 }
 
