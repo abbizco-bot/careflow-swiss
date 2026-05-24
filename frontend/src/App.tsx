@@ -1535,7 +1535,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
           setActivePage("stationA");
         }}
       >
-        Stationsleitung
+        Wohnbereichsleitung
       </button>
 
       <button
