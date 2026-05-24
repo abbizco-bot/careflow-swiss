@@ -407,3 +407,30 @@
   padding: 16px;
   margin-bottom: 20px;
 }
+.staff-matrix {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.staff-matrix th,
+.staff-matrix td {
+  padding: 10px;
+  text-align: center;
+}
+
+.staff-matrix td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.matrix-green {
+  background: #e7f5ea;
+}
+
+.matrix-yellow {
+  background: #fff4d6;
+}
+
+.matrix-red {
+  background: #fde2e2;
+}

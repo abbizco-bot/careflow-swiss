@@ -29,6 +29,7 @@ type DemoPage =
   | "deviations"
   | "interventions"
   | "staff"
+  | "staffOverview"
   | "qualifications"
   | "reports"
   | "settings"
@@ -75,7 +76,7 @@ const navigationItems: NavigationItem[] = [
   { key: "week", label: "Wochenüberblick", isEnabled: true },
   { key: "deviations", label: "Abweichungen", isEnabled: true },
   { key: "interventions", label: "Interventionen", isEnabled: false },
-  { key: "staff", label: "Personal", isEnabled: false },
+  { key: "staffOverview", label: "Personal", isEnabled: true },
   { key: "qualifications", label: "Qualifikationen", isEnabled: false },
   { key: "settings", label: "Einstellungen", isEnabled: false },
 ];
@@ -1196,6 +1197,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
     if (activePage === "rolling") return renderRollingOverview();
     if (activePage === "stationA") return renderStationAView();
     if (activePage === "employee") return renderEmployeeView();
+    if (activePage === "staffOverview") return renderStaffOverview();
     if (activePage === "day") return renderDayView();
     if (activePage === "week") return renderWeekView();
     if (activePage === "deviations") return renderDeviationsView();
@@ -1207,6 +1209,129 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       />
     );
   }
+ function renderStaffOverview() {
+  return (
+    <main className="page-shell">
+
+      <section className="hero-card">
+        <p className="eyebrow">Personalübersicht</p>
+
+        <h1>Rollierende Personalübersicht – 28 Tage</h1>
+
+        <p>
+          Übersicht über Mitarbeitende, Einsatzdichte,
+          Belastung und Abwesenheiten.
+        </p>
+      </section>
+
+      <section className="hero-card">
+
+        <table className="station-detail-table">
+
+          <thead>
+            <tr>
+              <th>Mitarbeitende</th>
+              <th>Einsatzdichte</th>
+              <th>Belastung</th>
+              <th>Abwesenheiten</th>
+              <th>Qualifikation</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+              <td>Anna Müller</td>
+              <td>92%</td>
+              <td>Hoch</td>
+              <td>0</td>
+              <td>HF</td>
+            </tr>
+
+            <tr>
+              <td>Lukas Meier</td>
+              <td>74%</td>
+              <td>Mittel</td>
+              <td>2</td>
+              <td>HF</td>
+            </tr>
+
+            <tr>
+              <td>Sara Rossi</td>
+              <td>61%</td>
+              <td>Nachtdienst</td>
+              <td>1</td>
+              <td>FaGe</td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </section>
+      <section className="hero-card">
+
+  <p className="eyebrow">Rollierende Personallage – 28 Tage</p>
+
+  <table className="staff-matrix">
+
+    <thead>
+      <tr>
+        <th>Mitarbeitende</th>
+        <th>22</th>
+        <th>23</th>
+        <th>24</th>
+        <th>25</th>
+        <th>26</th>
+        <th>27</th>
+        <th>28</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <tr>
+        <td>Anna Müller</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">Y</td>
+        <td className="matrix-red">R</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">Y</td>
+      </tr>
+
+      <tr>
+        <td>Lukas Meier</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">Y</td>
+        <td className="matrix-yellow">Y</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-red">R</td>
+        <td className="matrix-green">G</td>
+      </tr>
+
+      <tr>
+        <td>Sara Rossi</td>
+        <td className="matrix-red">R</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">Y</td>
+        <td className="matrix-green">G</td>
+        <td className="matrix-yellow">Y</td>
+        <td className="matrix-green">G</td>
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</section>
+
+    </main>
+  );
+}
   function renderStationAView() {
   return (
     <main className="page-shell">
