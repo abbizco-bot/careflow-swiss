@@ -1335,7 +1335,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
     </main>
   );
 }
-  function renderEmployeeView() {
+ function renderEmployeeView() {
   return (
     <>
       <PageHeader
@@ -1343,6 +1343,15 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         subtitle="Persönliche Einsatz- und Belastungsperspektive für die nächsten 28 Tage."
       />
 
+      <section className="role-context-card">
+        <p className="eyebrow">Verantwortungsebene</p>
+        <h3>Mitarbeitende</h3>
+        <p>
+          Persönliche Sicht auf Einsätze, Belastung und Hinweise.
+          Nicht sichtbar: Teamrisiken, Führungsindikatoren und Gesamtorganisation.
+        </p>
+      </section>
+    
       <section
         style={{
           background: "#ffffff",

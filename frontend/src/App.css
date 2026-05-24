@@ -400,3 +400,10 @@
   background: #113c2b;
   color: white;
 }
+.role-context-card {
+  background: #f4f8f6;
+  border-left: 5px solid #113c2b;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
