@@ -69,7 +69,7 @@ type DayViewModel = {
 const navigationItems: NavigationItem[] = [
   { key: "rolling", label: "Rollierende Übersicht", isEnabled: true },
   { key: "stationA", label: "Wohnbereich A", isEnabled: true },
-  { key: "employee", label: "Mein CareFlow", isEnabled: true },
+  { key: "employee", label: "Mitarbeitende", isEnabled: true },
   { key: "day", label: "Tagesansicht", isEnabled: true },
   { key: "reports", label: "Reports", isEnabled: false },
   { key: "week", label: "Wochenüberblick", isEnabled: true },
@@ -618,7 +618,14 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
             {copy.appSubtitle}
           </p>
         </header>
-        
+        <section className="role-context-card">
+  <p className="eyebrow">Verantwortungsebene</p>
+  <h3>Heimleitung</h3>
+  <p>
+    Überblick über die Gesamtorganisation. Fokus auf kritische Tage,
+    wiederkehrende Engpässe und priorisierten Handlungsbedarf.
+  </p>
+</section>
            {activePage === "employee" && (
           <section
             style={{
