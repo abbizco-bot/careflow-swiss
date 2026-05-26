@@ -31,6 +31,7 @@ type DemoPage =
   | "interventions"
   | "staff"
   | "staffOverview"
+  | "qm"
   | "qualifications"
   | "reports"
   | "settings"
@@ -80,10 +81,10 @@ const navigationItems: NavigationItem[] = [
   { key: "staffOverview", label: "👥 Personalübersicht", isEnabled: true },
   { key: "employee", label: "🙋 Mitarbeitende", isEnabled: true },
 
-  { key: "interventions", label: "🛠 Interventionen", isEnabled: false },
-  { key: "qualifications", label: "🎓 Qualifikationen", isEnabled: false },
-  { key: "reports", label: "📄 Reports", isEnabled: false },
-
+   { key: "interventions", label: "🛠 Interventionen", isEnabled: true },
+  { key: "qm", label: "📊 QM-Lage", isEnabled: true },
+  { key: "qualifications", label: "🎓 Qualifikationen", isEnabled: true },
+  { key: "reports", label: "📄 Reports", isEnabled: true },
   { key: "settings", label: "⚙ Einstellungen", isEnabled: false },
 ];
 
@@ -1208,9 +1209,9 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
                   key={day.date}
                   type="button"
                   onClick={() => {
-                    setSelectedDay(day);
-                    setActivePage("day");
-                  }}
+  setSelectedDay(day);
+  setActivePage("interventions");
+}}
                   style={{
                     display: "grid",
                    gridTemplateColumns: "1fr 0.8fr 1fr 1.6fr 2fr",
@@ -1263,24 +1264,825 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       </>
     );
   }
+  function renderInterventionsView() {
+  const interventions = [
+    {
+      severity: "critical",
+      title: "Kritische Unterdeckung Frühdienst",
+      intervention: "Springerpool prüfen und Fachperson anfragen",
+      effect: "Qualifikationslücke reduziert, Lage wird angespannt",
+      status: "Empfohlen",
+    },
+    {
+      severity: "attention",
+      title: "Erhöhte Belastung im Team",
+      intervention: "Interne Dienstverschiebung prüfen",
+      effect: "Belastung gleichmässiger verteilt",
+      status: "Geprüft",
+    },
+    {
+      severity: "stable",
+      title: "Wiederholte Ausfälle erkannt",
+      intervention: "Externe Unterstützung vorbereiten",
+      effect: "Lage kann früh stabilisiert werden",
+      status: "Umgesetzt",
+    },
+  ];
 
-  function renderActivePage() {
-    if (activePage === "rolling") return renderRollingOverview();
-    if (activePage === "stationA") return renderStationAView();
-    if (activePage === "employee") return renderEmployeeView();
-    if (activePage === "staffOverview") return renderStaffOverview();
-    if (activePage === "day") return renderDayView();
-    if (activePage === "week") return renderWeekView();
-    if (activePage === "deviations") return renderDeviationsView();
+  return (
+    <main>
+      <h1>Interventionen</h1>
 
-    return (
-      <PageHeader
-        title="In Vorbereitung"
-        subtitle="Diese Sicht ist für eine spätere Ausbaustufe vorgesehen."
-      />
-    );
+      <p style={{ color: "#5f6f66", maxWidth: 760 }}>
+        Beispielhafte Führungsmaßnahmen und deren erwartete Wirkung auf die
+        Personallage.
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gap: 20,
+          marginTop: 24,
+        }}
+      >
+        {interventions.map((item) => (
+          <section
+            key={item.title}
+            style={{
+              background: "#ffffff",
+              border: "1px solid #dfe8e2",
+              borderRadius: 16,
+              padding: 24,
+            }}
+          >
+            <div
+  style={{
+    marginBottom: 16,
+    display: "flex",
+    justifyContent: "flex-start",
+  }}
+>
+              <div
+  style={{
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 12,
+    background:
+      item.severity === "critical"
+        ? "#fce8e6"
+        : item.severity === "attention"
+        ? "#fff4d6"
+        : "#e7f4ea",
+  }}
+>
+  {item.severity === "critical"
+    ? "Kritisch"
+    : item.severity === "attention"
+    ? "Aufmerksamkeit"
+    : "Stabilisiert"}
+</div>
+
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto 1fr auto 1fr auto 0.8fr",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <small>Lage</small>
+                <div>{item.title}</div>
+              </div>
+
+              <div>→</div>
+
+              <div>
+                <small>Intervention</small>
+                <div>{item.intervention}</div>
+              </div>
+
+              <div>→</div>
+
+              <div>
+                <small>Wirkung</small>
+                <div>{item.effect}</div>
+              </div>
+
+              <div>→</div>
+
+             <div>
+  <small>Status</small>
+  <div>{item.status}</div>
+
+  <div style={{ marginTop: 12 }}>
+    <button
+      onClick={() => setActivePage("qualifications")}
+      style={{
+        padding: "6px 12px",
+        borderRadius: 8,
+       border: "1px solid #0f5d3d",
+background: "#0f5d3d",
+color: "#ffffff",
+cursor: "pointer",
+fontSize: 12,
+fontWeight: 700,
+boxShadow: "0 4px 10px rgba(15, 93, 61, 0.18)",
+      }}
+    >
+      Weiter zu Qualifikationen →
+    </button>
+  </div>
+</div>
+            </div>
+              </section>
+        ))}
+      </div>
+
+          </main>
+  );
+}
+type QmSignalSeverity = "stable" | "attention" | "critical";
+
+type QmSignal = {
+  title: string;
+  category: string;
+  severity: QmSignalSeverity;
+  description: string;
+  relevance: string;
+  leadershipHint: string;
+};
+
+const qmSignals: QmSignal[] = [
+  {
+    title: "Wiederholte Unterdeckung im Spätdienst",
+    category: "Personelle Stabilität",
+    severity: "attention",
+    description:
+      "In mehreren Spätdiensten zeigt sich eine knappe Besetzung. Die Lage ist nicht akut kritisch, aber führungsrelevant.",
+    relevance:
+      "Mögliche Auswirkungen auf Übergaben, Belastung im Team und kontinuierliche Betreuung.",
+    leadershipHint:
+      "Muster in der nächsten Teamleitungsbesprechung prüfen und wiederkehrende Ursachen sichtbar machen.",
+  },
+  {
+    title: "Qualifikationslücke im Frühdienst",
+    category: "Fachliche Sicherheit",
+    severity: "critical",
+    description:
+      "Für einen Frühdienst besteht eine qualifikationsbezogene Lücke. Die reine Kopfzahl reicht nicht aus.",
+    relevance:
+      "Relevant für Tagesverantwortung, Delegation und fachliche Absicherung.",
+    leadershipHint:
+      "Tagesfunktion neu prüfen, qualifizierte Person verschieben oder Springerpool klären.",
+  },
+  {
+    title: "Kurzfristige Umplanungen nehmen zu",
+    category: "Prozessstabilität",
+    severity: "attention",
+    description:
+      "Mehrere Tage zeigen kurzfristige Anpassungen. Dies kann auf eine instabile Planungslage hinweisen.",
+    relevance:
+      "Relevant für Planbarkeit, Mitarbeitendenbelastung und Verlässlichkeit der Einsatzplanung.",
+    leadershipHint:
+      "Ursachen unterscheiden: Krankheit, offene Dienste, Ferienplanung oder strukturelle Unterdeckung.",
+  },
+  {
+    title: "Intervention stabilisiert kritischen Tag",
+    category: "Führungswirksamkeit",
+    severity: "stable",
+    description:
+      "Eine erkannte kritische Lage konnte durch eine gezielte Intervention entschärft werden.",
+    relevance:
+      "Relevant für Nachvollziehbarkeit, Lernen und spätere QM-Reflexion.",
+    leadershipHint:
+      "Intervention als Beispiel für wirksames Führungshandeln dokumentieren.",
+  },
+];
+function getQmSeverityLabel(severity: QmSignalSeverity) {
+  if (severity === "critical") return "Kritisch";
+  if (severity === "attention") return "Beobachten";
+  return "Stabilisiert";
+}
+
+function getQmSeverityStyles(severity: QmSignalSeverity): React.CSSProperties {
+  if (severity === "critical") {
+    return {
+      background: "#fff1f0",
+      border: "1px solid #f2b8b5",
+      color: "#8a1f17",
+    };
   }
- function renderStaffOverview() {
+
+  if (severity === "attention") {
+    return {
+      background: "#fff7e6",
+      border: "1px solid #f1cf8a",
+      color: "#7a4a00",
+    };
+  }
+
+  return {
+    background: "#eef7f0",
+    border: "1px solid #b8d8c0",
+    color: "#245c35",
+  };
+}
+function renderQualificationsView() {
+  return (
+    <main>
+      <h1>Qualifikationen</h1>
+
+      <p style={{ color: "#5f6f66", maxWidth: 760 }}>
+        Übersicht der Qualifikationen und qualifikationsbezogenen Risiken.
+      </p>
+
+      <section
+        style={{
+          marginTop: 24,
+          background: "#ffffff",
+          border: "1px solid #dfe8e2",
+          borderRadius: 16,
+          padding: 24,
+        }}
+      >
+        <h2>Gesamtübersicht</h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 16,
+            marginTop: 16,
+          }}
+        >
+          <div>
+            <strong>HF Pflege</strong>
+            <div>12 Mitarbeitende</div>
+          </div>
+
+          <div>
+            <strong>FaGe</strong>
+            <div>18 Mitarbeitende</div>
+          </div>
+
+          <div>
+            <strong>SRK</strong>
+            <div>9 Mitarbeitende</div>
+          </div>
+        </div>
+
+        <hr style={{ margin: "24px 0" }} />
+
+        <h2>Frühdienst 15.06.2026</h2>
+
+        <p>
+          Soll HF: <strong>2</strong>
+        </p>
+
+        <p>
+          Ist HF: <strong>1</strong>
+        </p>
+
+        <p style={{ color: "#a94442", fontWeight: 700 }}>
+          → Qualifikationslücke erkannt
+          <div style={{ marginTop: 16 }}>
+  <button
+    onClick={() => setActivePage("interventions")}
+    style={{
+      padding: "8px 14px",
+      borderRadius: 8,
+      border: "1px solid #dfe8e2",
+      background: "#ffffff",
+      cursor: "pointer",
+    }}
+  >
+   Interventionen prüfen
+  </button>
+
+  <button
+    onClick={() => setActivePage("reports")}
+    style={{
+      marginLeft: 12,
+      padding: "8px 14px",
+      borderRadius: 8,
+      border: "1px solid #dfe8e2",
+      background: "#ffffff",
+      cursor: "pointer",
+    }}
+  >
+    Report öffnen
+  </button>
+</div>
+        </p>
+      </section>
+    </main>
+  );
+}
+function renderReportsView() {
+  return (
+    <main>
+      <h1>Reports</h1>
+
+      <p style={{ color: "#5f6f66", maxWidth: 760 }}>
+        Verdichtete Führungssicht über Lage, Interventionen und
+        Qualifikationsentwicklung.
+      </p>
+
+      <section
+        style={{
+          marginTop: 24,
+          background: "#ffffff",
+          border: "1px solid #dfe8e2",
+          borderRadius: 16,
+          padding: 24,
+        }}
+      >
+        <h2>Führungslage letzte 28 Tage</h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 16,
+            marginTop: 16,
+          }}
+        >
+          <div>
+            <strong>18</strong>
+            <div>Stabile Tage</div>
+          </div>
+
+          <div>
+            <strong>7</strong>
+            <div>Aufmerksamkeit</div>
+          </div>
+
+          <div>
+            <strong>3</strong>
+            <div>Kritische Tage</div>
+          </div>
+        </div>
+
+        <hr style={{ margin: "24px 0" }} />
+
+        <h2>Interventionen</h2>
+
+        <p>5 empfohlen</p>
+        <p>3 geprüft</p>
+        <p>1 umgesetzt</p>
+
+        <hr style={{ margin: "24px 0" }} />
+
+        <h2>Qualifikationen</h2>
+
+        <p>2 HF-Lücken erkannt</p>
+        <p>1 Qualifikationslücke geschlossen</p>
+
+        <hr style={{ margin: "24px 0" }} />
+
+        <h2>Trend</h2>
+
+        <hr style={{ margin: "24px 0" }} />
+
+<h2>Lerneffekt</h2>
+
+<div
+  style={{
+    marginTop: 16,
+    padding: 20,
+    borderRadius: 12,
+    background: "#f7faf8",
+    border: "1px solid #dfe8e2",
+  }}
+>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1.2fr auto 1.2fr auto 1.2fr auto 1.2fr",
+      gap: 20,
+      alignItems: "start",
+      textAlign: "center",
+    }}
+  >
+    <div>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>⚠</div>
+      <strong>Problem erkannt</strong>
+      <div style={{ color: "#5f6f66", marginTop: 6 }}>HF-Lücke erkannt</div>
+    </div>
+
+    <div>→</div>
+
+    <div>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>🛠</div>
+      <strong>Intervention</strong>
+      <div style={{ color: "#5f6f66", marginTop: 6 }}>
+        Maßnahme durchgeführt
+      </div>
+    </div>
+
+    <div>→</div>
+
+    <div>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>📈</div>
+      <strong>Wirkung</strong>
+      <div style={{ color: "#5f6f66", marginTop: 6 }}>
+        Personallage stabilisiert
+      </div>
+    </div>
+
+    <div>→</div>
+
+    <div>
+      <div style={{ fontSize: 36, marginBottom: 10 }}>🗄</div>
+      <strong>Lernen</strong>
+      <div style={{ color: "#5f6f66", marginTop: 6 }}>
+        Muster gespeichert
+      </div>
+    </div>
+   </div>
+</div>
+
+<div style={{ marginTop: 24 }}>
+  <button
+    onClick={() => setActivePage("rolling")}
+    style={{
+      padding: "8px 14px",
+      borderRadius: 8,
+      border: "1px solid #dfe8e2",
+      background: "#ffffff",
+      cursor: "pointer",
+    }}
+  >
+    Zur rollierenden Übersicht
+  </button>
+</div>
+
+      </section>
+    </main>
+  );
+}
+function renderActivePage() {
+  if (activePage === "rolling") return renderRollingOverview();
+  if (activePage === "stationA") return renderStationAView();
+  if (activePage === "employee") return renderEmployeeView();
+  if (activePage === "staffOverview") return renderStaffOverview();
+  if (activePage === "day") return renderDayView();
+  if (activePage === "week") return renderWeekView();
+  if (activePage === "deviations") return renderDeviationsView();
+  if (activePage === "interventions") return renderInterventionsView();
+  if (activePage === "qm") return renderQmLeadershipPage();
+  if (activePage === "qualifications") return renderQualificationsView();
+  if (activePage === "reports") return renderReportsView();
+
+  return renderRollingOverview();
+}
+function renderQmLeadershipPage() {
+  const criticalCount = qmSignals.filter((signal) => signal.severity === "critical").length;
+  const attentionCount = qmSignals.filter((signal) => signal.severity === "attention").length;
+  const stableCount = qmSignals.filter((signal) => signal.severity === "stable").length;
+
+  return (
+    <section>
+      <div
+        style={{
+          background: "#ffffff",
+          border: "1px solid #dfe8e2",
+          borderRadius: 18,
+          padding: 24,
+          marginBottom: 22,
+          boxShadow: "0 10px 28px rgba(23, 43, 31, 0.06)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 8px",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#6f7f73",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Qualität & Führung
+        </p>
+
+        <h1
+          style={{
+            margin: "0 0 12px",
+            fontSize: 30,
+            lineHeight: 1.15,
+            color: "#24352a",
+          }}
+        >
+          QM-relevante Führungslage
+        </h1>
+
+        <p
+          style={{
+            margin: 0,
+            maxWidth: 850,
+            fontSize: 16,
+            lineHeight: 1.6,
+            color: "#526157",
+          }}
+        >
+          CareFlow bewertet keine Pflegequalität automatisch. Die Demo zeigt jedoch,
+          wo operative Personallagen, Qualifikationslücken und wiederkehrende
+          Abweichungen für Leitung, Qualitätsverantwortliche und Teamleitungen
+          relevant werden können.
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: 16,
+          marginBottom: 22,
+        }}
+      >
+        <div
+          style={{
+            background: "#fff1f0",
+            border: "1px solid #f2b8b5",
+            borderRadius: 16,
+            padding: 18,
+          }}
+        >
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#8a1f17" }}>
+            {criticalCount}
+          </div>
+          <div style={{ fontSize: 14, color: "#8a1f17", fontWeight: 700 }}>
+            kritische QM-Hinweise
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#fff7e6",
+            border: "1px solid #f1cf8a",
+            borderRadius: 16,
+            padding: 18,
+          }}
+        >
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#7a4a00" }}>
+            {attentionCount}
+          </div>
+          <div style={{ fontSize: 14, color: "#7a4a00", fontWeight: 700 }}>
+            Beobachtungspunkte
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "#eef7f0",
+            border: "1px solid #b8d8c0",
+            borderRadius: 16,
+            padding: 18,
+          }}
+        >
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#245c35" }}>
+            {stableCount}
+          </div>
+          <div style={{ fontSize: 14, color: "#245c35", fontWeight: 700 }}>
+            stabilisierende Effekte
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 18,
+        }}
+      >
+        {qmSignals.map((signal) => (
+          <article
+            key={signal.title}
+            style={{
+              background: "#ffffff",
+              border: "1px solid #dfe8e2",
+              borderRadius: 18,
+              padding: 20,
+              boxShadow: "0 8px 22px rgba(23, 43, 31, 0.05)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                alignItems: "flex-start",
+                marginBottom: 12,
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#6f7f73",
+                  }}
+                >
+                  {signal.category}
+                </p>
+
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: 20,
+                    lineHeight: 1.25,
+                    color: "#24352a",
+                  }}
+                >
+                  {signal.title}
+                </h2>
+              </div>
+
+              <span
+                style={{
+                  ...getQmSeverityStyles(signal.severity),
+                  borderRadius: 999,
+                  padding: "5px 10px",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {getQmSeverityLabel(signal.severity)}
+              </span>
+            </div>
+
+            <p
+              style={{
+                margin: "0 0 12px",
+                color: "#526157",
+                lineHeight: 1.55,
+                fontSize: 15,
+              }}
+            >
+              {signal.description}
+            </p>
+
+            <div
+              style={{
+                background: "#f7faf7",
+                border: "1px solid #e2ebe4",
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 12,
+              }}
+            >
+              <strong style={{ color: "#304437" }}>QM-Relevanz: </strong>
+              <span style={{ color: "#526157" }}>{signal.relevance}</span>
+            </div>
+
+            <div
+              style={{
+                background: "#f9fbfa",
+                border: "1px solid #e4ece6",
+                borderRadius: 12,
+                padding: 14,
+              }}
+            >
+              <strong style={{ color: "#304437" }}>Führungshinweis: </strong>
+              <span style={{ color: "#526157" }}>{signal.leadershipHint}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div
+        style={{
+          marginTop: 22,
+          background: "#ffffff",
+          border: "1px solid #dfe8e2",
+          borderRadius: 18,
+          padding: 20,
+        }}
+      >
+        <h2
+          style={{
+            margin: "0 0 8px",
+            fontSize: 20,
+            color: "#24352a",
+          }}
+        >
+          Einordnung für Qualitätsmanagement
+        </h2>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#526157",
+            lineHeight: 1.6,
+            fontSize: 15,
+          }}
+        >
+          Diese Sicht ist keine automatische Qualitätsbewertung und ersetzt keine
+          Pflegevisite, kein Audit und kein QM-System. Sie unterstützt die Führung
+          dabei, qualitätsrelevante Muster frühzeitig zu erkennen, zu besprechen
+          und bei Bedarf nachvollziehbar zu dokumentieren.
+        </p>
+      </div>
+      <section
+  style={{
+    marginTop: 22,
+    background: "#ffffff",
+    border: "1px solid #dfe8e2",
+    borderRadius: 18,
+    padding: 22,
+  }}
+>
+  <h2
+    style={{
+      margin: "0 0 10px",
+      fontSize: 20,
+      color: "#24352a",
+    }}
+  >
+    Von der Abweichung zur lernenden Organisation
+  </h2>
+
+  <p
+    style={{
+      margin: "0 0 14px",
+      color: "#526157",
+      lineHeight: 1.6,
+      fontSize: 15,
+    }}
+  >
+    QM-relevante Führung entsteht nicht erst im Audit. Sie beginnt dort,
+    wo wiederkehrende Abweichungen, knappe Qualifikationslagen und
+    wirksame Interventionen sichtbar gemacht und gemeinsam reflektiert werden.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: 14,
+      marginTop: 16,
+    }}
+  >
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>1. Abweichung erkennen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        CareFlow zeigt, wo Besetzung, Qualifikation oder Planstabilität
+        vom erwarteten Zustand abweichen.
+      </p>
+    </div>
+
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>2. Führungshandeln ableiten</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Die Lage wird nicht automatisch entschieden, sondern für Leitung
+        und Teamleitung führungsrelevant verdichtet.
+      </p>
+    </div>
+
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>3. Lernen ermöglichen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Wiederkehrende Muster können später für Reports, Reflexion,
+        Qualitätsdialoge und Organisationslernen genutzt werden.
+      </p>
+    </div>
+  </div>
+</section>
+    </section>
+  );
+}
+function renderStaffOverview() {
   return (
     <main
       style={{
