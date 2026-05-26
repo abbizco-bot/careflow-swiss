@@ -1238,11 +1238,49 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
     return (
       <>
         {renderScenarioButtons()}
+      
         <PageHeader
-  title="Abweichungen"
-  subtitle="Relevante Planungs- und Führungssignale der nächsten 28 Tage"
-/>
+      title="Abweichungen"
+      subtitle="Relevante Planungs- und Führungssignale der nächsten 28 Tage"
+    />
 
+    <section
+      style={{
+        background: "#ffffff",
+        border: "1px solid #dfe8e2",
+        borderRadius: 16,
+        padding: 18,
+        margin: "0 0 24px",
+        boxShadow: "0 8px 22px rgba(23, 43, 31, 0.04)",
+      }}
+    >
+      <p
+        style={{
+          margin: "0 0 6px",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "#6f7f73",
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}
+      >
+        Demo-Hinweis
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#526157",
+          lineHeight: 1.6,
+          fontSize: 15,
+        }}
+      >
+        Abweichungen werden in CareFlow nicht als Fehler markiert, sondern als
+        Führungssignale. Entscheidend ist, ob daraus rechtzeitig Orientierung
+        und Handlung entsteht.
+      </p>
+    </section>    
+ 
 <section className="role-switcher">
   <button
     className={deviationFilter === "all" ? "active" : ""}
@@ -1378,7 +1416,43 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
         Beispielhafte Führungsmaßnahmen und deren erwartete Wirkung auf die
         Personallage.
       </p>
+<section
+  style={{
+    background: "#ffffff",
+    border: "1px solid #dfe8e2",
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 22,
+    marginBottom: 24,
+    boxShadow: "0 8px 22px rgba(23, 43, 31, 0.04)",
+  }}
+>
+  <p
+    style={{
+      margin: "0 0 6px",
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#6f7f73",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Demo-Hinweis
+  </p>
 
+  <p
+    style={{
+      margin: 0,
+      color: "#526157",
+      lineHeight: 1.6,
+      fontSize: 15,
+    }}
+  >
+    Interventionen werden hier beispielhaft dargestellt. CareFlow entscheidet
+    nicht automatisch, sondern unterstützt Leitung und Teamleitung bei der
+    strukturierten Prüfung möglicher Massnahmen.
+  </p>
+</section>
       <div
         style={{
           display: "grid",
