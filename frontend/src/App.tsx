@@ -645,9 +645,9 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
             CareFlow-Swiss
           </div>
 
-          <h1 style={{ fontSize: 42, margin: 0, fontWeight: 700 }}>
-            {copy.appTitle}
-          </h1>
+       <h1 style={{ fontSize: 42, margin: 0, fontWeight: 700 }}>
+  {copy.appTitle}
+</h1>
 
           <p
             style={{
@@ -661,6 +661,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
             {copy.appSubtitle}
           </p>
         </header>
+
         <section className="role-context-card">
   <p className="eyebrow">Verantwortungsebene</p>
   <h3>Heimleitung</h3>

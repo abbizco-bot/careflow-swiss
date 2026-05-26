@@ -6,9 +6,9 @@ export const currentLanguage: Language = "de";
 
 export const rollingLeadershipCopy = {
   de: {
-    appTitle: "CareFlow-Swiss",
-    appSubtitle:
-      "Ein ruhiger Führungs- und Decision-Layer für Schweizer Alters- und Pflegeheime. CareFlow ersetzt keine Dienstplanung, sondern macht Personallage, Abweichungen und Führungsbedarf früh sichtbar.",
+    appTitle: "Rollierende Führungslage",
+appSubtitle:
+  "Die nächsten 28 Tage werden als Führungshorizont dargestellt. CareFlow zeigt, welche Tage stabil sind, wo erhöhte Aufmerksamkeit nötig ist und wo Führungshandeln erforderlich wird.",
 
     periodLabel: "Rolling View",
     periodIntro: "In den nächsten",
