@@ -662,7 +662,7 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
           </p>
         </header>
 
-        <section className="role-context-card">
+   <section className="role-context-card">
   <p className="eyebrow">Verantwortungsebene</p>
   <h3>Heimleitung</h3>
   <p>
@@ -670,41 +670,121 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
     wiederkehrende Engpässe und priorisierten Handlungsbedarf.
   </p>
 </section>
-           {activePage === "employee" && (
-          <section
-            style={{
-              background: "#ffffff",
-              borderRadius: 24,
-              padding: 32,
-              maxWidth: 900,
-              margin: "0 auto 32px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
-            }}
-          >
-            <h2>Mein CareFlow</h2>
-            <h3>Anna Meier – FaGe</h3>
-            <p style={{ color: "#66736b" }}>Meine nächsten 28 Tage</p>
 
-            <ul>
-              <li>22.06 Frühdienst</li>
-              <li>23.06 Frühdienst</li>
-              <li>24.06 Frei</li>
-              <li>25.06 Spätdienst</li>
-              <li>26.06 Nachtdienst</li>
-            </ul>
+<section
+  style={{
+    background: "#ffffff",
+    border: "1px solid #dfe8e2",
+    borderRadius: 20,
+    padding: 24,
+    maxWidth: 1040,
+    margin: "0 auto 32px",
+    boxShadow: "0 10px 28px rgba(23, 43, 31, 0.05)",
+  }}
+>
+  <p
+    style={{
+      margin: "0 0 8px",
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#6f7f73",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Demo-Pfad
+  </p>
 
-            <hr />
+  <h2
+    style={{
+      margin: "0 0 12px",
+      fontSize: 24,
+      color: "#24352a",
+    }}
+  >
+    Von der Lage zur Entscheidung
+  </h2>
 
-            <p>
-              Belastung:
-              <strong style={{ color: "#d17c00" }}> erhöht nächste Woche</strong>
-            </p>
+  <p
+    style={{
+      margin: "0 0 20px",
+      color: "#526157",
+      lineHeight: 1.6,
+      fontSize: 15,
+      maxWidth: 880,
+    }}
+  >
+    CareFlow führt in der Demo durch einen einfachen Führungspfad: Zuerst wird
+    die rollierende Lage sichtbar. Danach werden Abweichungen geprüft, mögliche
+    Interventionen betrachtet und QM-relevante Muster für Lernen und Führung
+    eingeordnet.
+  </p>
 
-            <p>Qualifikationen: FaGe / Wundmanagement</p>
-            <p>Hinweis: Hohe Einsatzdichte nächste Woche</p>
-          </section>
-        )}
-     
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+      gap: 14,
+    }}
+  >
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>1. Lage sehen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Die nächsten 28 Tage als ruhiger Führungshorizont.
+      </p>
+    </div>
+
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>2. Abweichung verstehen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Kritische Tage werden nicht isoliert, sondern im Kontext sichtbar.
+      </p>
+    </div>
+
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>3. Intervention prüfen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Führungshandeln bleibt menschlich, wird aber strukturierter vorbereitet.
+      </p>
+    </div>
+
+    <div
+      style={{
+        background: "#f7faf7",
+        border: "1px solid #e2ebe4",
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
+      <strong style={{ color: "#304437" }}>4. Lernen ermöglichen</strong>
+      <p style={{ margin: "8px 0 0", color: "#526157", lineHeight: 1.5 }}>
+        Wiederkehrende Muster werden für QM, Reflexion und Organisation nutzbar.
+      </p>
+    </div>
+  </div>
+</section>
+    
         <div
   
           style={{
