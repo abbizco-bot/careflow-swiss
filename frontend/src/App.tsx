@@ -1,5 +1,12 @@
 ﻿import { useMemo, useState } from "react";
 import "./App.css";
+import {
+  simulationEvents,
+  simulationEventCategories,
+  defaultSensitivitySettings,
+  runCareFlowSimulation,
+} from "./simulationModel";
+import type { SensitivityKey, SensitivitySettings } from "./simulationModel";
 import logo from "./assets/careflow-signet.png";
 import {
   currentLanguage,
@@ -29,6 +36,7 @@ type DemoPage =
   | "week"
   | "deviations"
   | "interventions"
+  | "simulation"
   | "staff"
   | "staffOverview"
   | "qm"
@@ -81,7 +89,8 @@ const navigationItems: NavigationItem[] = [
   { key: "staffOverview", label: "👥 Personalübersicht", isEnabled: true },
   { key: "employee", label: "🙋 Mitarbeitende", isEnabled: true },
 
-   { key: "interventions", label: "🛠 Interventionen", isEnabled: true },
+  { key: "interventions", label: "🛠 Interventionen", isEnabled: true },
+  { key: "simulation", label: "🧪 Simulation", isEnabled: true },
   { key: "qm", label: "📊 QM-Lage", isEnabled: true },
   { key: "qualifications", label: "🎓 Qualifikationen", isEnabled: true },
   { key: "reports", label: "📄 Reports", isEnabled: true },
@@ -319,7 +328,12 @@ function getDayViewModel(severity: Severity): DayViewModel {
 function App() {
   const [activePage, setActivePage] = useState<DemoPage>("rolling");
   const [activeRole, setActiveRole] = useState<"leadership" | "station" | "employee">("leadership");
-  
+    const [selectedSimulationEventIds, setSelectedSimulationEventIds] = useState<
+  string[]
+>(["short_notice_sick_leave", "resident_acuity_increase"]);
+
+const [simulationSensitivity, setSimulationSensitivity] =
+  useState<SensitivitySettings>(defaultSensitivitySettings);
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [selectedScenarioKey, setSelectedScenarioKey] =
     useState<DemoScenarioKey>("critical");
@@ -613,7 +627,489 @@ console.log("visibleDays", visibleDays.map((day) => day.daySeverity));
       </section>
     );
   }
+  function renderSimulationView() {
+  const result = runCareFlowSimulation(
+    selectedSimulationEventIds,
+    simulationSensitivity
+  );
+    const simulationStatusPresentation = {
+    stabil: {
+      label: "Stabil",
+      tone: "Die simulierte Lage bleibt im normalen Führungsrhythmus.",
+      background: "#f4faf5",
+      border: "#cfe5d3",
+    },
+    angespannt: {
+      label: "Angespannt",
+      tone: "Die Lage sollte beobachtet und koordiniert werden.",
+      background: "#fff8e6",
+      border: "#ecd89a",
+    },
+    kritisch: {
+      label: "Kritisch",
+      tone: "Die Lage verlangt aktive Führungsinterventionen.",
+      background: "#fff1e8",
+      border: "#e8b78f",
+    },
+    eskalation: {
+      label: "Eskalation prüfen",
+      tone: "Die Lage überschreitet den normalen Steuerungsrahmen.",
+      background: "#fdecec",
+      border: "#e2a0a0",
+    },
+  }[result.status];
+  const simulationPresets: {
+  id: string;
+  label: string;
+  description: string;
+  eventIds: string[];
+  sensitivity: SensitivitySettings;
+}[] = [
+  {
+    id: "normal_pressure",
+    label: "Normaler Engpass",
+    description:
+      "Kurzfristige Krankmeldung und erhöhter Betreuungsbedarf bei normaler Sensitivität.",
+    eventIds: ["short_notice_sick_leave", "resident_acuity_increase"],
+    sensitivity: {
+      shortNotice: 1.0,
+      qualification: 1.0,
+      workload: 1.0,
+      qm: 1.0,
+    },
+  },
+  {
+    id: "critical_day",
+    label: "Kritischer Tag",
+    description:
+      "Krankmeldung, Qualifikationslücke und erhöhter Pflegebedarf verstärken sich gegenseitig.",
+    eventIds: [
+      "short_notice_sick_leave",
+      "qualification_gap",
+      "resident_acuity_increase",
+    ],
+    sensitivity: {
+      shortNotice: 1.3,
+      qualification: 1.3,
+      workload: 1.4,
+      qm: 1.0,
+    },
+  },
+  {
+    id: "escalation_check",
+    label: "Eskalation prüfen",
+    description:
+      "Mehrere Ereignisse treffen zusammen: Nachtdienstausfall, Qualifikationslücke, Todesfall und Dokumentationsdruck.",
+    eventIds: [
+      "night_shift_absence",
+      "qualification_gap",
+      "resident_death",
+      "documentation_backlog",
+    ],
+    sensitivity: {
+      shortNotice: 1.4,
+      qualification: 1.5,
+      workload: 1.3,
+      qm: 1.5,
+    },
+  },
+];
 
+function applySimulationPreset(
+  preset: (typeof simulationPresets)[number],
+) {
+  setSelectedSimulationEventIds(preset.eventIds);
+  setSimulationSensitivity(preset.sensitivity);
+}
+
+function toggleEvent(eventId: string) {
+  setSelectedSimulationEventIds((current: string[]) => {
+    if (current.includes(eventId)) {
+      return current.filter((id) => id !== eventId);
+    }
+
+    return [...current, eventId];
+  });
+}
+
+function updateSensitivity(key: SensitivityKey, value: string) {
+  setSimulationSensitivity((current: SensitivitySettings) => ({
+    ...current,
+    [key]: Number(value),
+  }));
+}
+
+return (
+  <section>
+       <div style={{ marginBottom: 24 }}>
+        <h1>Simulation & Sensitivität</h1>
+
+       <p style={{ maxWidth: 920, lineHeight: 1.6 }}>
+  Diese Ansicht zeigt eine regelbasierte What-if-Simulation für die
+  Führungslage. CareFlow berechnet hier keine Prognose und trifft keine
+  automatische Entscheidung. Die Simulation macht sichtbar, wie mehrere
+  Ereignisse zusammenwirken können und welche Faktoren die Lage besonders
+  sensitiv verändern.
+</p>
+
+<div
+  style={{
+    maxWidth: 920,
+    marginTop: 14,
+    padding: 16,
+    borderRadius: 14,
+    border: "1px solid #dfe8e2",
+    background: "#f7faf8",
+    color: "#3f4d45",
+    lineHeight: 1.55,
+  }}
+>
+  <strong>Demo-Hinweis:</strong> Die Simulation dient als fachlicher
+  Orientierungsraum für Heimleitung, Wohnbereichsleitung und übergeordnete
+  Führung. Sie ersetzt keine Pflegeentscheidung, keine Dienstplanung und keine
+  QM-Beurteilung, sondern zeigt prüfbare Führungswirkungen.
+  <div
+  style={{
+    maxWidth: 920,
+    marginTop: 18,
+    padding: 16,
+    borderRadius: 14,
+    border: "1px solid #dfe8e2",
+    background: "#ffffff",
+  }}
+>
+  <h2 style={{ marginTop: 0 }}>Demo-Schnellwahl</h2>
+
+  <p style={{ marginTop: 0, color: "#4f5d55", lineHeight: 1.5 }}>
+    Für Präsentationen können typische Führungslagen direkt geladen werden.
+    Die Auswahl verändert Ereignisse und Sensitivitätswerte gleichzeitig.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: 12,
+    }}
+  >
+    {simulationPresets.map((preset) => (
+      <button
+        key={preset.id}
+        type="button"
+        onClick={() => applySimulationPreset(preset)}
+        style={{
+          padding: 14,
+          borderRadius: 12,
+          border: "1px solid #dfe8e2",
+          background: "#f7faf8",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <strong>{preset.label}</strong>
+        <div
+          style={{
+            marginTop: 6,
+            color: "#66736b",
+            fontSize: 13,
+            lineHeight: 1.4,
+          }}
+        >
+          {preset.description}
+        </div>
+      </button>
+    ))}
+  </div>
+</div>
+</div>
+<div
+  style={{
+    maxWidth: 920,
+    marginTop: 18,
+    padding: 18,
+    borderRadius: 14,
+    border: "1px solid #dfe8e2",
+    background: "#f8fbf9",
+    color: "#3f4d45",
+    lineHeight: 1.6,
+  }}
+>
+  <h2 style={{ marginTop: 0 }}>Was CareFlow hier fachlich zeigt</h2>
+
+  <p>
+    Die Simulation übersetzt einzelne Ereignisse nicht direkt in eine
+    automatische Entscheidung, sondern in eine prüfbare Führungslage. Eine
+    Krankmeldung, eine Qualifikationslücke oder ein Todesfall werden nicht nur
+    als isolierte Abweichungen betrachtet, sondern in ihrem Zusammenspiel mit
+    Arbeitslast, Kurzfristigkeit, Qualifikation und QM-Relevanz sichtbar gemacht.
+  </p>
+
+  <p>
+    Damit entsteht ein gemeinsamer Orientierungsraum: Die Heimleitung sieht,
+    welche Faktoren die Lage verschärfen. Die Wohnbereichsleitung erkennt, wo
+    konkrete Entlastung oder Umplanung nötig sein könnte. Die übergeordnete
+    Führung erhält Hinweise, ob es sich um eine normale operative Schwankung,
+    einen kritischen Tag oder eine mögliche Eskalationslage handelt.
+  </p>
+
+  <p style={{ marginBottom: 0 }}>
+    Fachlich wichtig ist: CareFlow behauptet hier keine Wahrheit über die
+    Zukunft. Es zeigt eine nachvollziehbare Wenn-dann-Lage, die besprochen,
+    geprüft und mit Erfahrungswissen ergänzt werden kann.
+  </p>
+</div>
+<div
+  style={{
+    maxWidth: 920,
+    marginTop: 18,
+    padding: 18,
+    borderRadius: 14,
+    border: "1px solid #dfe8e2",
+    background: "#ffffff",
+    color: "#3f4d45",
+    lineHeight: 1.6,
+  }}
+>
+  <h2 style={{ marginTop: 0 }}>So kann diese Ansicht im Gespräch erklärt werden</h2>
+
+  <p>
+    „Diese Simulation zeigt nicht, was sicher passieren wird. Sie zeigt, was
+    führungsrelevant werden kann, wenn mehrere Ereignisse zusammenfallen. Gerade
+    in der Pflege entsteht Belastung selten durch ein einzelnes Ereignis, sondern
+    durch Überlagerung: eine Krankmeldung, eine Qualifikationslücke, ein erhöhter
+    Betreuungsbedarf oder ein Todesfall.“
+  </p>
+
+  <p>
+    „CareFlow macht diese Überlagerung sichtbar. Die Führung sieht nicht nur,
+    dass etwas abweicht, sondern wodurch die Lage kippen könnte: durch
+    Kurzfristigkeit, fehlende Qualifikation, steigende Arbeitslast oder
+    QM-relevante Zusatzanforderungen.“
+  </p>
+
+  <p style={{ marginBottom: 0 }}>
+    „Die Simulation ist deshalb keine automatische Entscheidung, sondern eine
+    strukturierte Gesprächsgrundlage: Was müssen wir beobachten? Wo braucht es
+    Entlastung? Und ab wann ist eine übergeordnete Unterstützung sinnvoll?“
+  </p>
+</div>
+<div
+  style={{
+    maxWidth: 920,
+    marginTop: 14,
+    padding: 16,
+    borderRadius: 14,
+    border: "1px solid #dfe8e2",
+    background: "#f7faf8",
+    color: "#3f4d45",
+    lineHeight: 1.55,
+  }}
+>
+  <strong>Demo-Hinweis:</strong> Die Simulation dient als fachlicher
+  Orientierungsraum für Heimleitung, Wohnbereichsleitung und übergeordnete
+  Führung. Sie ersetzt keine Pflegeentscheidung, keine Dienstplanung und keine
+  QM-Beurteilung, sondern zeigt prüfbare Führungswirkungen.
+</div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.1fr 0.9fr",
+          gap: 24,
+          alignItems: "start",
+        }}
+      >
+        <div
+          style={{
+            background: "#ffffff",
+            border: "1px solid #dfe8e2",
+            borderRadius: 16,
+            padding: 20,
+          }}
+        >
+          <h2>Führungsrelevante Ereignisse</h2>
+
+          <p style={{ lineHeight: 1.5 }}>
+            Wähle ein oder mehrere Ereignisse aus. Die Simulation berücksichtigt
+            ausdrücklich, dass mehrere Ereignisse gleichzeitig eintreten können.
+          </p>
+
+          {simulationEventCategories.map((category) => {
+            const events = simulationEvents.filter(
+              (event) => event.category === category.id
+            );
+
+            return (
+              <div key={category.id} style={{ marginTop: 18 }}>
+                <h3 style={{ marginBottom: 6 }}>{category.label}</h3>
+
+                <p style={{ marginTop: 0, color: "#667", lineHeight: 1.4 }}>
+                  {category.description}
+                </p>
+
+                {events.map((event) => (
+                  <label
+                    key={event.id}
+                    style={{
+                      display: "block",
+                      padding: "10px 12px",
+                      marginTop: 8,
+                      border: "1px solid #e4ece6",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      background: selectedSimulationEventIds.includes(event.id)
+                        ? "#f1f7f3"
+                        : "#ffffff",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSimulationEventIds.includes(event.id)}
+                      onChange={() => toggleEvent(event.id)}
+                      style={{ marginRight: 10 }}
+                    />
+
+                    <strong>{event.label}</strong>
+
+                    <div style={{ marginTop: 4, color: "#667", lineHeight: 1.4 }}>
+                      {event.description}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            background: "#ffffff",
+            border: "1px solid #dfe8e2",
+            borderRadius: 16,
+            padding: 20,
+          }}
+        >
+          <h2>Sensitivität</h2>
+
+          <p style={{ lineHeight: 1.5 }}>
+            Die Sensitivität zeigt, welche Einflussfaktoren die Wirkung der
+            Ereignisse verstärken oder abschwächen.
+          </p>
+
+         {([
+  ["shortNotice", "Kurzfristigkeit"],
+  ["qualification", "Qualifikationsdruck"],
+  ["workload", "Arbeitslast"],
+  ["qm", "QM-Relevanz"],
+] as const).map(([key, label]) => (
+            <div key={key} style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 4,
+                }}
+              >
+                <span>{label}</span>
+                <strong>{simulationSensitivity[key].toFixed(1)}</strong>
+              </div>
+
+              <input
+                type="range"
+                min="0.5"
+                max="1.8"
+                step="0.1"
+                value={simulationSensitivity[key]}
+                onChange={(event) => updateSensitivity(key, event.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+          ))}
+
+          <div
+  style={{
+    marginTop: 28,
+    padding: 18,
+    borderRadius: 14,
+    border: `1px solid ${simulationStatusPresentation.border}`,
+    background: simulationStatusPresentation.background,
+  }}
+>
+            <h2 style={{ marginTop: 0 }}>Simulationsergebnis</h2>
+
+           <div style={{ fontSize: 18, marginBottom: 8 }}>
+  Status: <strong>{simulationStatusPresentation.label}</strong>
+</div>
+
+<div style={{ marginBottom: 12, color: "#4f5d55", lineHeight: 1.5 }}>
+  {simulationStatusPresentation.tone}
+</div>
+
+            <div style={{ fontSize: 18, marginBottom: 12 }}>
+              Gesamtwirkung: <strong>{result.totalImpact}</strong>
+            </div>
+
+            <p style={{ lineHeight: 1.6 }}>{result.interpretation}</p>
+          </div>
+
+          <div style={{ marginTop: 24 }}>
+            <h3>Stärkste Treiber</h3>
+
+            {result.strongestDrivers.length === 0 ? (
+              <p>Keine Ereignisse ausgewählt.</p>
+            ) : (
+              result.strongestDrivers.map((event) => (
+                <div
+                  key={event.id}
+                  style={{
+                    padding: "10px 0",
+                    borderBottom: "1px solid #edf2ee",
+                  }}
+                >
+                  <strong>{event.label}</strong>
+
+                  <div style={{ color: "#667" }}>
+                    Wirkungswert: {event.impactScore}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div style={{ marginTop: 24 }}>
+            <h3>Führungsrelevanz</h3>
+
+            {result.leadershipAreas.length === 0 ? (
+              <p>Keine Führungsbereiche betroffen.</p>
+            ) : (
+                          <p style={{ lineHeight: 1.6 }}>
+                {result.leadershipAreas.join(", ")}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 28 }}>
+        <button
+          type="button"
+          onClick={() => setActivePage("rolling")}
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "1px solid #dfe8e2",
+            background: "#ffffff",
+            cursor: "pointer",
+            fontWeight: 650,
+          }}
+        >
+          Zur rollierenden Übersicht
+        </button>
+      </div>
+    </section>
+  );
+}
   function renderRollingOverview() {
     const todayStatusLabel =
       selectedScenarioKey === "critical"
@@ -1891,6 +2387,7 @@ function renderActivePage() {
   if (activePage === "week") return renderWeekView();
   if (activePage === "deviations") return renderDeviationsView();
   if (activePage === "interventions") return renderInterventionsView();
+  if (activePage === "simulation") return renderSimulationView();
   if (activePage === "qm") return renderQmLeadershipPage();
   if (activePage === "qualifications") return renderQualificationsView();
   if (activePage === "reports") return renderReportsView();
