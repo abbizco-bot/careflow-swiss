@@ -1,15 +1,34 @@
 import { describe, expect, it } from "vitest";
 import { buildLeadershipDayHeadline } from "./leadership-view.service";
+import type { GapInterpretationResult } from "../shared/gap-interpretation/gap-interpretation";
+import type { QualificationStatus } from "../validations/qualification/qualification.types";
 
-function baselineValidation() {
+type HeadlineValidationFixture = {
+  coverage: { status: string };
+  qualification: { status: QualificationStatus };
+  issues: [];
+};
+
+type ShiftSignalFixture = {
+  shiftId: number;
+  shiftType: string;
+  requiredCount: number;
+  assignedPlanned: number;
+  assignedEffective: number;
+  sickCount: number;
+  requestedCount: number;
+  gapContext: GapInterpretationResult;
+};
+
+function baselineValidation(): HeadlineValidationFixture {
   return {
     coverage: { status: "ok" },
-    qualification: { status: "qualified" },
+    qualification: { status: "ok" },
     issues: [],
   };
 }
 
-function baselineShiftSignal() {
+function baselineShiftSignal(): ShiftSignalFixture {
   return {
     shiftId: 1,
     shiftType: "early",
@@ -69,7 +88,7 @@ describe("buildLeadershipDayHeadline visibility context", () => {
       fullValidations: [
         {
           coverage: { status: "understaffed" },
-          qualification: { status: "qualified" },
+          qualification: { status: "ok" },
           issues: [],
         },
       ],

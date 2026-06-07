@@ -2,6 +2,10 @@ import type {
   PlanningMonth,
   PlanningShiftTemplate,
 } from "../../generated/prisma/client";
+import type {
+  GapInterpretationSignalCode,
+  GapPrimaryCause,
+} from "../shared/gap-interpretation/gap-interpretation";
 import type { PlanningPublicationState } from "../planning-months/planning-publication-state";
 
 export interface PlanningMonthComparison {
