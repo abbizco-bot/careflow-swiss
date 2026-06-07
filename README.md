@@ -6,7 +6,8 @@ Der MVP macht operative Personallage, Qualifikationsabdeckung, Tagesfunktionen u
 
 ## Aktueller Stand
 
-- Backend auf Node.js, TypeScript, PostgreSQL und Prisma.
+- Backend/API auf Node.js, TypeScript, Express, PostgreSQL und Prisma.
+- Aktive MVP-Frontend-Demo unter `apps/careflow-mvp-frontend`.
 - Integrationstests und Modul-Tests bilden den fachlichen Test-Harness.
 - `Employee.baseQualification` beschreibt die stabile Grundqualifikation einer Person.
 - `Assignment.assignedFunction` beschreibt die operative Tagesfunktion in einer konkreten Zuteilung.
@@ -14,6 +15,59 @@ Der MVP macht operative Personallage, Qualifikationsabdeckung, Tagesfunktionen u
 - Assignments werden durch diese Pruefung nicht automatisch blockiert.
 - Die Leadership Day View zeigt Funktionshinweise fuehrungstauglich an.
 - Governance-Dokumente liegen unter `docs/governance/`.
+- Technische Dokumentation liegt unter `docs/technical/`.
+
+## Aktive Repository-Struktur
+
+- `src`: aktive Backend/API-Quelle.
+- `prisma/schema.prisma`: aktive Prisma-Datenmodellierung.
+- `apps/careflow-mvp-frontend`: aktive MVP-Frontend-Demo.
+- `docs/technical/README.md`: Einstieg in die technische Dokumentation.
+- `docs/indexes/careflow-implementation-index.md`: Index der aktiven Implementierungsbereiche.
+
+## Nicht als aktive Quelle verwenden
+
+- `dist`: generierter Backend-Build-Output.
+- `node_modules`: Abhaengigkeiten.
+- `src/generated`: generierter Prisma-Client.
+- `frontend`: Legacy/exploratives Frontend, solange es nicht explizit reaktiviert wird.
+- `careflow-frontend`: alter/generated Frontend-Ordner; nicht als aktive Basis uebernehmen.
+
+## Build und lokale Entwicklung
+
+Backend-Build aus dem Repository-Root:
+
+```bash
+npm.cmd run build
+```
+
+MVP-Frontend-Build:
+
+```bash
+cd apps/careflow-mvp-frontend
+npm.cmd run build
+```
+
+MVP-Frontend lokal starten:
+
+```bash
+cd apps/careflow-mvp-frontend
+npm.cmd run dev
+```
+
+Backend lokal starten:
+
+```bash
+npm.cmd run dev
+```
+
+Demo-Daten werden lokal erzeugt mit:
+
+```bash
+npm.cmd run seed:mvp
+```
+
+`npm.cmd run seed:mvp` ist nur fuer lokale Demo- und Entwicklungsdaten gedacht. Nicht gegen Produktivdatenbanken ausfuehren.
 
 ## Fachliche Grundsaetze
 
@@ -37,6 +91,7 @@ CareFlow unterscheidet zwischen stabiler Grundqualifikation und tagesbezogener F
 
 ## Wichtige API-Bereiche
 
+- `GET /leadership/day?date=...` wird von der aktiven MVP-Frontend-Demo genutzt.
 - `GET /validations/shifts/overview?date=...` beantwortet die taegliche Versorgungslage.
 - `GET /validations/employees/overview?date=...` beantwortet die taegliche Personallage.
 - `GET /validations/shifts/full?date=...` liefert die vollstaendige Schichtsicht inklusive Qualification-Function-Warnungen.
@@ -47,6 +102,8 @@ Der Full-Endpoint orchestriert bestehende Validations. Er soll fachliche Warnung
 
 CareFlow besitzt eine reproduzierbare lokale MVP-Demo. Sie zeigt CareFlow als Fuehrungs- und Decision-Layer, nicht als automatisches Dienstplanungssystem.
 
+Die aktive MVP-Frontend-Demo liegt unter `apps/careflow-mvp-frontend` und zeigt aktuell die Leadership-Day-Demo auf Basis bestehender Backend-MVP-Endpunkte.
+
 Die Demo umfasst:
 
 - stable day
@@ -55,17 +112,7 @@ Die Demo umfasst:
 - critical qualification gap
 - absence-driven gap
 - mixed gap
-- planning comparison scenario
-
-Demo-Daten werden lokal erzeugt mit:
-
-```bash
-npm run seed:mvp
-```
-
-Das Script erzeugt Demo-Daten fuer Demo-Year `2088`, setzt bestehende Demo-Daten im Demo-Bereich zurueck und gibt die dynamische `PlanningMonth.id` fuer Planning Comparison aus.
-
-`npm run seed:mvp` ist nur fuer lokale Demo- und Entwicklungsdaten gedacht. Nicht gegen Produktivdatenbanken ausfuehren.
+- planning comparison scenario im Backend/API-Kontext
 
 Die Demo nutzt insbesondere diese API-Bereiche:
 
@@ -86,7 +133,7 @@ Ergaenzende Governance-Dokumente:
 - `docs/governance/mvp-demo-seed-strategy-v0.1.md`
 - `docs/governance/mvp-demo-runbook-v0.1.md`
 
-Die MVP-Demo enthaelt bewusst keinen produktiven Import, keine automatische Dienstplanung, keine personenbezogene Gap-Ausgabe, keinen ReferencePlan-Freeze, kein PeriodClosing und keine Frontend-Demo, solange kein Frontend integriert ist.
+Die MVP-Demo enthaelt bewusst keinen produktiven Import, keine automatische Dienstplanung, keine personenbezogene Gap-Ausgabe, keinen ReferencePlan-Freeze, kein PeriodClosing und kein produktives SaaS-Frontend.
 
 ## Tests
 
@@ -104,7 +151,7 @@ npm.cmd test -- src/modules/validations
 
 Tests dienen in CareFlow nicht nur der technischen Stabilitaet. Sie dokumentieren auch fachliche Wahrheit, besonders bei Besetzung, Qualifikation, Tagesfunktion, Abwesenheiten und Leadership View.
 
-## Governance
+## Governance und technische Dokumentation
 
 Die aktuellen Governance-Dokumente liegen hier:
 
@@ -112,6 +159,11 @@ Die aktuellen Governance-Dokumente liegen hier:
 - `docs/governance/entwicklungszyklus-v0.1.md`
 
 Sie definieren die Grenzen von KI-Nutzung, Human-in-the-loop-Verantwortung und den Standardablauf fuer fachlich relevante Entwicklungsschritte.
+
+Technische Dokumentation:
+
+- `docs/technical/README.md`
+- `docs/indexes/careflow-implementation-index.md`
 
 ## Bewusst nicht Teil des MVP
 
