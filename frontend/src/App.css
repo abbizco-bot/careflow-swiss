@@ -280,6 +280,98 @@
 .info-card.critical {
   border-left: 5px solid #d05a5a;
 }
+.assessment-context-card {
+  text-align: left;
+}
+
+.assessment-context-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.assessment-status {
+  border-radius: 999px;
+  background: #edf4ef;
+  color: #245c35;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.assessment-context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.assessment-context-grid div {
+  border: 1px solid #e2ebe4;
+  border-radius: 12px;
+  background: #f7faf7;
+  padding: 10px 12px;
+}
+
+.assessment-context-grid dt {
+  color: #66736b;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.assessment-context-grid dd {
+  margin: 4px 0 0;
+  color: #304437;
+  font-weight: 700;
+}
+
+.assessment-context-note,
+.assessment-priority-note,
+.assessment-inline-context,
+.qm-assessment-context-card p {
+  color: #526157;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.assessment-context-note,
+.qm-assessment-context-card p {
+  margin: 0;
+}
+
+.assessment-priority-note {
+  margin: 12px 0 0;
+  border-top: 1px solid #e2ebe4;
+  padding-top: 12px;
+  color: #304437;
+  font-weight: 700;
+}
+
+.assessment-inline-context {
+  max-width: 760px;
+  margin: 16px auto 0;
+  border-top: 1px solid #e7c8c8;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+.qm-assessment-context-card {
+  margin-top: 22px;
+  background: #ffffff;
+  border: 1px solid #dfe8e2;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: left;
+}
+
+.qm-assessment-context-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: #24352a;
+}
 .station-week-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(80px, 1fr));

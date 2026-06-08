@@ -18,6 +18,10 @@ import {
   type DemoScenario,
   type DemoScenarioKey,
 } from "./demo/demoScenarios";
+import {
+  assessmentContextsByUnit,
+  type AssessmentContext,
+} from "./assessmentContext";
 
 const copy = rollingLeadershipCopy[currentLanguage];
 
@@ -96,6 +100,62 @@ const navigationItems: NavigationItem[] = [
   { key: "reports", label: "📄 Reports", isEnabled: true },
   { key: "settings", label: "⚙ Einstellungen", isEnabled: false },
 ];
+
+function AssessmentContextBox({
+  context,
+  showPriorityHint,
+}: {
+  context: AssessmentContext;
+  showPriorityHint: boolean;
+}) {
+  return (
+    <section className="hero-card assessment-context-card">
+      <div className="assessment-context-header">
+        <div>
+          <p className="eyebrow">{context.unitName}</p>
+          <h2>Assessment-Kontext</h2>
+        </div>
+        <span className="assessment-status">{context.status}</span>
+      </div>
+
+      <dl className="assessment-context-grid">
+        <div>
+          <dt>Pflegekomplexität</dt>
+          <dd>{context.careComplexityLevel}</dd>
+        </div>
+        <div>
+          <dt>Quelle</dt>
+          <dd>{context.sourceLabel}</dd>
+        </div>
+        <div>
+          <dt>Mögliche spätere Datenquelle</dt>
+          <dd>{context.assessmentSystemHint}</dd>
+        </div>
+        <div>
+          <dt>Letzte Aktualisierung</dt>
+          <dd>{context.assessmentDate}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{context.status}</dd>
+        </div>
+      </dl>
+
+      <p className="assessment-context-note">
+        <strong>Hinweis: </strong>
+        {context.note}
+      </p>
+
+      {showPriorityHint && (
+        <p className="assessment-priority-note">
+          Die reduzierte Fachpersonenabdeckung trifft auf eine erhöhte
+          Pflegekomplexität. Die Lage wird deshalb höher priorisiert als bei
+          stabiler Bewohnerstruktur.
+        </p>
+      )}
+    </section>
+  );
+}
 
 function normalizeSeverity(daySeverity?: string): Severity {
   if (daySeverity === "critical") return "critical";
@@ -1441,6 +1501,14 @@ return (
           >
             {selectedScenario?.description}
           </div>
+
+          {selectedScenarioKey === "critical" && (
+            <p className="assessment-inline-context">
+              Assessment-Kontext: Wohnbereich A weist eine erhöhte
+              Pflegekomplexität auf. CareFlow berücksichtigt dies als
+              Führungskontext, nicht als Pflegebewertung.
+            </p>
+          )}
         </section>
 
         {renderTimeline()}
@@ -2645,6 +2713,14 @@ function renderQmLeadershipPage() {
           und bei Bedarf nachvollziehbar zu dokumentieren.
         </p>
       </div>
+      <section className="qm-assessment-context-card">
+        <h2>Assessment-/Pflegekomplexitätskontext</h2>
+        <p>
+          Pflegekomplexität wird als Kontext der Führungslage berücksichtigt.
+          CareFlow erstellt daraus keine automatische Pflegeeinstufung, keine
+          BESA-/interRAI-Bewertung und keine Qualitätsbewertung.
+        </p>
+      </section>
       <section
   style={{
     marginTop: 22,
@@ -2890,6 +2966,11 @@ padding: "32px 48px",
   );
 }
   function renderStationAView() {
+  const stationAssessmentContext = assessmentContextsByUnit["Wohnbereich A"];
+  const stationAHasCriticalSituation = true;
+  const showAssessmentPriorityHint =
+    selectedScenarioKey === "critical" || stationAHasCriticalSituation;
+
   return (
     <main className="page-shell">
 
@@ -2966,6 +3047,10 @@ padding: "32px 48px",
 
   </div>
 </section>
+<AssessmentContextBox
+  context={stationAssessmentContext}
+  showPriorityHint={showAssessmentPriorityHint}
+/>
 <section className="hero-card">
   <p className="eyebrow">Dienstlage im Detail</p>
   <table className="station-detail-table">
