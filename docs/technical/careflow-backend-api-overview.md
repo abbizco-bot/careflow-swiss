@@ -137,11 +137,11 @@ Rolling planning:
 UI route:
 
 - `/ui` is mounted through `src/modules/leadership-ui/leadership-ui.routes.ts`.
-- Exact intended role of this route family in the current application is to be verified before treating it as part of the active MVP frontend.
+- Exact intended role of this route family in the current application is to be verified before treating it as part of a stable frontend/backend contract.
 
-## Endpoint Used By MVP Frontend
+## Endpoint Used By Earlier Leadership Day MVP Frontend
 
-The active MVP frontend currently calls:
+The earlier backend-integrated Leadership Day MVP frontend currently calls:
 
 - `GET /leadership/day?date=YYYY-MM-DD`
 
@@ -167,4 +167,3 @@ This is implemented through:
 ## Update Triggers
 
 Update this document when route files, route mounts, query parameters, response shapes, or endpoint ownership changes.
-

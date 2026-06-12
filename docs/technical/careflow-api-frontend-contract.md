@@ -2,13 +2,15 @@
 
 ## Purpose
 
-This document records the currently active contract between the MVP frontend and backend.
+This document records the currently documented backend-integrated frontend contract.
 
-It covers only the endpoint currently consumed by `apps/careflow-mvp-frontend`.
+It covers the endpoint consumed by the earlier Leadership Day MVP frontend under `apps/careflow-mvp-frontend`.
+
+The active extended demo frontend under `frontend` may contain presentation-oriented or locally modelled functionality. This document must not be read as proof that every active demo function is backed by a production-ready backend API.
 
 ## Current Implementation Status
 
-The active MVP frontend consumes:
+The earlier Leadership Day MVP frontend consumes:
 
 - `GET /leadership/day?date=YYYY-MM-DD`
 
@@ -37,7 +39,7 @@ If the date query is missing or empty, the backend returns an error response thr
 
 ## Frontend Base URL
 
-The frontend API client uses:
+The earlier MVP frontend API client uses:
 
 ```text
 VITE_CAREFLOW_API_BASE_URL
@@ -49,9 +51,9 @@ Fallback:
 http://localhost:3001
 ```
 
-## Response Shape Used By Frontend
+## Response Shape Used By Earlier MVP Frontend
 
-The active frontend expects:
+The earlier MVP frontend expects:
 
 ```ts
 type LeadershipDayResponse = {
@@ -84,11 +86,11 @@ type LeadershipDayShift = {
 };
 ```
 
-The backend type includes `qualification.status` as a qualification status or `null`. The current frontend type declares it as `string`. Whether this should be adjusted to include `null` is to be verified.
+The backend type includes `qualification.status` as a qualification status or `null`. The current earlier MVP frontend type declares it as `string`. Whether this should be adjusted to include `null` is to be verified.
 
 ## Frontend Rendering Semantics
 
-The frontend renders:
+The earlier MVP frontend renders:
 
 - day headline title, detail, and context line
 - day-level severity derived from the severities of all returned shifts
@@ -105,7 +107,7 @@ Translations are in:
 
 ## Demo Scenarios
 
-The frontend calls the same endpoint with dates from:
+The earlier MVP frontend calls the same endpoint with dates from:
 
 - `apps/careflow-mvp-frontend/src/demoScenarios.ts`
 
@@ -120,18 +122,18 @@ Current dates:
 
 ## Known Limitations
 
-- This contract documents only the active frontend-consumed endpoint.
-- Week, month, validations, planning comparison, and rolling planning endpoints are active backend surface but not currently consumed by the active MVP frontend.
-- Error response rendering is generic in the frontend; detailed error contract is not documented here.
+- This contract documents only the earlier backend-integrated Leadership Day MVP endpoint consumption.
+- The active extended demo frontend under `frontend` is not fully described by this API contract.
+- Week, month, validations, planning comparison, and rolling planning endpoints are active backend surface but not documented here as active demo frontend contracts.
+- Error response rendering is generic in the earlier MVP frontend; detailed error contract is not documented here.
 - `qualification.status` nullability should be verified against frontend type expectations.
 
 ## Next Likely Extensions
 
 - Add contract tests or fixtures for Leadership Day responses.
-- Document Planning Comparison once the active MVP frontend consumes it.
+- Document active demo frontend API usage if and when demo features are backed by stable backend endpoints.
 - Align frontend TypeScript types with backend response nullability if needed.
 
 ## Update Triggers
 
-Update this document when `src/modules/leadership-view/leadership-view.types.ts`, `apps/careflow-mvp-frontend/src/api.ts`, or frontend rendering assumptions change.
-
+Update this document when `src/modules/leadership-view/leadership-view.types.ts`, `apps/careflow-mvp-frontend/src/api.ts`, active demo frontend API usage, or frontend rendering assumptions change.

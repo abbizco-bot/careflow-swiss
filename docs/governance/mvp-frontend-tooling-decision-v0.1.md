@@ -1,5 +1,13 @@
 # CareFlow MVP Frontend Tooling Decision v0.1
 
+## Aktueller Status nach ADR-110
+
+Dieses Dokument bleibt als historische Tooling-Entscheidung fuer das fruehere backend-integrierte Leadership-Day-MVP-Frontend unter `apps/careflow-mvp-frontend` erhalten.
+
+Die aktuelle Demo- und Praesentations-Frontend-Linie liegt gemaess ADR-110 unter `frontend`. Technische Frontend-Konsolidierung ist bis nach der Pilotpraesentation zurueckgestellt.
+
+Dieses Dokument darf daher nicht als aktueller Entscheid gelesen werden, neue Demo-Frontend-Entwicklung in `apps/careflow-mvp-frontend` fortzusetzen.
+
 ## Grundentscheidung
 
 Fuer den MVP-Frontend-Prototyp wird ein kleines Vite/React/TypeScript-Projekt bevorzugt.

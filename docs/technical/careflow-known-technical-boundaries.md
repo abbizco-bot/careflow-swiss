@@ -10,31 +10,38 @@ The active implementation is:
 
 - backend/API: `src`
 - Prisma schema: `prisma/schema.prisma`
-- MVP frontend: `apps/careflow-mvp-frontend`
+- active demo frontend: `frontend`
+- earlier backend-integrated Leadership Day MVP frontend: `apps/careflow-mvp-frontend`
 
 ## Explicit Boundaries
 
 ### Root README Frontend Status
 
-The root `README.md` appears stale regarding frontend integration.
+The root `README.md` has been corrected to distinguish the active demo frontend from the earlier Leadership Day MVP frontend.
 
-It still states that there is no frontend demo integrated, while the repository now contains and documents the active MVP frontend under `apps/careflow-mvp-frontend`.
+Treat ADR-110 as the binding repository-state decision for current frontend classification.
 
-Treat this as a documentation mismatch, not as evidence that the MVP frontend is inactive.
+### Active Demo Frontend
 
-### Active MVP Frontend
+`frontend` is the active demo and presentation frontend.
 
-`apps/careflow-mvp-frontend` is the active MVP frontend.
+It contains the extended demo surface for rolling leadership views, deviations, interventions, QM situation, simulation, sensitivity analysis, assessment context and BESA/interRAI references.
 
-It is a focused Vite/React prototype for the Leadership Day demo. It is not the final SaaS frontend.
+`frontend/dist` is generated build output and is currently used as the build source for the manually deployed demo at `demo.careflow-swiss.ch`.
 
-### Legacy or Exploratory Frontend
+The active demo is not the final SaaS frontend. It may contain presentation-oriented or locally modelled functionality that is not yet backed by production-ready backend APIs.
 
-`frontend` is legacy or exploratory unless explicitly reactivated.
+### Earlier Leadership Day MVP Frontend
 
-It contains a separate Vite/React app with a large standalone demo surface, but it is not the documented active MVP frontend.
+`apps/careflow-mvp-frontend` is the earlier backend-integrated Leadership Day MVP frontend.
 
-Do not document `frontend` as active implementation without a new explicit decision.
+It is retained as a reference and possible migration source. It should not receive new features unless explicitly approved.
+
+### Deferred Frontend Consolidation
+
+Technical consolidation of `frontend/` and `apps/careflow-mvp-frontend/` is deferred until after the pilot presentation.
+
+Do not merge, delete, rename, upgrade, or refactor either frontend line as part of documentation correction.
 
 ### Old Generated/Unused Frontend Folder
 
@@ -50,6 +57,12 @@ Governance docs also indicate that the old `careflow-frontend` folder should not
 
 Do not treat `dist` as source code and do not base architecture documentation on it.
 
+### Generated Frontend Outputs
+
+`frontend/dist` and `apps/careflow-mvp-frontend/dist` are generated frontend build outputs.
+
+Do not manually edit generated frontend build files.
+
 ### Generated Prisma Client
 
 `src/generated` should be treated as generated code.
@@ -64,18 +77,24 @@ Do not edit generated Prisma client files manually.
 
 Do not inspect it in detail for application structure.
 
+### Deployment
+
+Deployment is currently manual.
+
+No CI/CD workflow or deployment script exists in the repository.
+
 ## Known Limitations
 
-- Some backend modules are active source but may be preparatory or not consumed by the MVP frontend.
-- This document does not decide product scope. It only records repository-level technical boundaries.
+- Some backend modules are active source but may be preparatory or not consumed by the active demo frontend.
+- Some active demo frontend functions may be presentation-oriented or locally modelled.
+- This document does not decide final product architecture. It only records repository-level technical boundaries.
 
 ## Next Likely Extensions
 
-- Update the root README to match active frontend reality when a documentation pass includes root README changes.
-- Add an explicit archival note for `frontend` if the project owner confirms it will remain inactive.
-- Add ignore guidance to future docs tooling if needed.
+- Update this document after a frontend consolidation decision.
+- Add deployment boundaries if a deployment process or CI/CD workflow is introduced.
+- Add an explicit archival note for `careflow-frontend` if the project owner confirms it will remain inactive.
 
 ## Update Triggers
 
-Update this document when any folder is reactivated, removed, renamed, or becomes part of the active build/development flow.
-
+Update this document when any folder is reactivated, removed, renamed, or becomes part of the active build/development/deployment flow.
